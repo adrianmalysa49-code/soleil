@@ -50,6 +50,19 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   header { padding: 24px 0 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+
+  /* Strzałka powrotu */
+  .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: white; border: 1.5px solid rgba(232,132,90,0.25);
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.22s ease; color: var(--accent); font-size: 1.1rem;
+  }
+  .back-btn:hover { background: var(--accent); color: white; transform: scale(1.08); }
+  .back-btn.visible { display: flex; }
+
   .logo-circle {
     width: 48px; height: 48px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -158,6 +171,7 @@
 
 <div class="app">
   <header>
+    <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
     <div class="logo-circle">☀️</div>
     <div class="header-text">
       <h1>Soleil</h1>
@@ -228,6 +242,7 @@ if ('serviceWorker' in navigator) {
 const input = document.getElementById('userInput');
 const chatWindow = document.getElementById('chatWindow');
 const welcomeMsg = document.getElementById('welcomeMsg');
+const backBtn = document.getElementById('backBtn');
 let conversationHistory = [];
 let firstMessage = true;
 
@@ -239,8 +254,28 @@ input.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
+function goBack() {
+  // Wyczyść wiadomości
+  const messages = chatWindow.querySelectorAll('.message-row');
+  messages.forEach(m => m.remove());
+  // Pokaż ekran powitalny
+  welcomeMsg.style.display = 'block';
+  // Ukryj strzałkę
+  backBtn.classList.remove('visible');
+  // Reset historii
+  conversationHistory = [];
+  firstMessage = true;
+  // Wyczyść pole tekstowe
+  input.value = '';
+  input.style.height = 'auto';
+}
+
 function appendMessage(role, text) {
-  if (firstMessage) { welcomeMsg.style.display = 'none'; firstMessage = false; }
+  if (firstMessage) {
+    welcomeMsg.style.display = 'none';
+    backBtn.classList.add('visible'); // Pokaż strzałkę
+    firstMessage = false;
+  }
   const row = document.createElement('div');
   row.className = `message-row ${role}`;
   const avatar = document.createElement('div');
@@ -291,7 +326,6 @@ async function sendMessage() {
   showTyping();
 
   try {
-    // Wywołuje bezpieczny backend Vercel — klucz jest w Environment Variables
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -517,7 +517,7 @@ async function sendMessage() {
 }
 
 // Inicjalizuj Clerk po załadowaniu
-document.querySelector('script[src*="clerk"]').addEventListener('load', initClerk);
+window.addEventListener('load', () => setTimeout(initClerk, 500));
 </script>
 </body>
 </html>

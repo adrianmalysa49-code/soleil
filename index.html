@@ -5,29 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Soleil — Twój przyjaciel</title>
 
-<!-- ═══════════════════════════════════════════════
-     PWA — Progressive Web App
-     Dzięki temu użytkownicy mogą dodać Soleil
-     do ekranu głównego telefonu jak prawdziwą apkę
-     ═══════════════════════════════════════════════ -->
+<!-- PWA -->
 <meta name="application-name" content="Soleil">
 <meta name="description" content="Twój przyjaciel AI — zawsze tu, by poprawić Ci nastrój">
-
-<!-- iOS (Safari) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Soleil">
-
-<!-- Android (Chrome) -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#e8845a">
-
-<!-- Manifest (plik który tworzysz osobno jako manifest.json) -->
 <link rel="manifest" href="manifest.json">
-
-<!-- Ikona dla iOS (możesz podmienić na własne logo) -->
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" href="icon-192.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -35,102 +21,77 @@
 
   :root {
     --bg: #fdf6ee;
-    --surface: #fff9f3;
     --accent: #e8845a;
     --accent2: #f2b48a;
     --accent3: #7dbdb5;
     --text: #3a2e28;
     --muted: #9e8e83;
-    --bubble-user: #e8845a;
-    --bubble-ai: #ffffff;
     --shadow: rgba(180, 120, 80, 0.13);
   }
 
   html, body {
     height: 100%;
-    height: -webkit-fill-available; /* fix dla Safari na iOS */
+    height: -webkit-fill-available;
     font-family: 'Lato', sans-serif;
     background: var(--bg);
     color: var(--text);
     overflow: hidden;
   }
 
-  /* Animated background */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(242, 180, 138, 0.28) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 85% 85%, rgba(125, 189, 181, 0.2) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 60% 40%, rgba(232, 132, 90, 0.09) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(242,180,138,0.28) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 85%, rgba(125,189,181,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 60% 40%, rgba(232,132,90,0.09) 0%, transparent 60%);
     z-index: 0;
     pointer-events: none;
     animation: bgShift 12s ease-in-out infinite alternate;
   }
 
   @keyframes bgShift {
-    0% { opacity: 1; }
-    100% { opacity: 0.6; }
+    0% { opacity: 1; } 100% { opacity: 0.6; }
   }
 
-  /* Floating particles */
   .particles {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; overflow: hidden;
   }
 
   .particle {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0.18;
+    position: absolute; border-radius: 50%; opacity: 0.18;
     animation: floatUp linear infinite;
   }
 
   @keyframes floatUp {
     0% { transform: translateY(110vh) scale(1); opacity: 0; }
-    10% { opacity: 0.18; }
-    90% { opacity: 0.18; }
+    10% { opacity: 0.18; } 90% { opacity: 0.18; }
     100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
   }
 
-  /* Layout */
   .app {
-    position: relative;
-    z-index: 1;
-    height: 100vh;
-    height: -webkit-fill-available;
-    display: flex;
-    flex-direction: column;
-    max-width: 760px;
-    margin: 0 auto;
+    position: relative; z-index: 1;
+    height: 100vh; height: -webkit-fill-available;
+    display: flex; flex-direction: column;
+    max-width: 760px; margin: 0 auto;
     padding: 0 16px;
-    padding-bottom: env(safe-area-inset-bottom); /* iOS notch/home bar */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Header */
   header {
     padding: 24px 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    display: flex; align-items: center; gap: 14px;
     flex-shrink: 0;
   }
 
   .logo-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 48px; height: 48px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
     box-shadow: 0 4px 16px rgba(232,132,90,0.35);
-    flex-shrink: 0;
     animation: pulse 3s ease-in-out infinite;
   }
 
@@ -141,118 +102,80 @@
 
   .header-text h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    color: var(--accent);
-    line-height: 1;
+    font-size: 1.5rem; color: var(--accent); line-height: 1;
   }
 
   .header-text p {
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-weight: 300;
-    margin-top: 2px;
-    letter-spacing: 0.04em;
+    font-size: 0.78rem; color: var(--muted);
+    font-weight: 300; margin-top: 2px; letter-spacing: 0.04em;
   }
 
   .status-dot {
-    width: 8px;
-    height: 8px;
-    background: #5dbf8a;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
+    width: 8px; height: 8px; background: #5dbf8a;
+    border-radius: 50%; display: inline-block; margin-right: 5px;
     animation: blink 2s ease-in-out infinite;
   }
 
   @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
   }
 
-  /* Chat area */
   .chat-window {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 10px 4px 16px;
+    flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column;
+    gap: 16px; padding: 10px 4px 16px;
     scroll-behavior: smooth;
   }
 
   .chat-window::-webkit-scrollbar { width: 4px; }
-  .chat-window::-webkit-scrollbar-track { background: transparent; }
   .chat-window::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
 
-  /* Welcome message */
   .welcome {
-    text-align: center;
-    padding: 28px 20px;
+    text-align: center; padding: 28px 20px;
     animation: fadeSlideIn 0.7s ease both;
   }
 
   .welcome .sun {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 12px;
+    font-size: 3rem; display: block; margin-bottom: 12px;
     animation: spinSlow 20s linear infinite;
   }
 
   @keyframes spinSlow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from { transform: rotate(0deg); } to { transform: rotate(360deg); }
   }
 
   .welcome h2 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.6rem;
-    color: var(--accent);
-    margin-bottom: 8px;
+    font-size: 1.6rem; color: var(--accent); margin-bottom: 8px;
   }
 
   .welcome p {
-    color: var(--muted);
-    font-size: 0.9rem;
-    font-weight: 300;
-    line-height: 1.6;
-    max-width: 420px;
-    margin: 0 auto;
+    color: var(--muted); font-size: 0.9rem;
+    font-weight: 300; line-height: 1.6;
+    max-width: 420px; margin: 0 auto;
   }
 
-  /* Suggestions */
   .suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 20px;
+    display: flex; flex-wrap: wrap;
+    gap: 8px; justify-content: center; margin-top: 20px;
   }
 
   .suggestion-btn {
-    background: white;
-    border: 1.5px solid var(--accent2);
-    color: var(--accent);
-    padding: 7px 14px;
-    border-radius: 20px;
-    font-size: 0.82rem;
-    font-family: 'Lato', sans-serif;
-    cursor: pointer;
-    transition: all 0.22s ease;
+    background: white; border: 1.5px solid var(--accent2);
+    color: var(--accent); padding: 7px 14px; border-radius: 20px;
+    font-size: 0.82rem; font-family: 'Lato', sans-serif;
+    cursor: pointer; transition: all 0.22s ease;
     box-shadow: 0 2px 8px var(--shadow);
   }
 
   .suggestion-btn:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    transform: translateY(-2px);
+    background: var(--accent); color: white;
+    border-color: var(--accent); transform: translateY(-2px);
     box-shadow: 0 5px 16px rgba(232,132,90,0.3);
   }
 
-  /* Messages */
   .message-row {
-    display: flex;
-    gap: 10px;
+    display: flex; gap: 10px;
     animation: fadeSlideIn 0.4s ease both;
   }
 
@@ -261,20 +184,12 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .message-row.user {
-    flex-direction: row-reverse;
-  }
+  .message-row.user { flex-direction: row-reverse; }
 
   .avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    margin-top: 2px;
+    width: 34px; height: 34px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 15px; margin-top: 2px;
   }
 
   .avatar.ai {
@@ -282,46 +197,31 @@
     box-shadow: 0 2px 8px rgba(232,132,90,0.3);
   }
 
-  .avatar.user {
-    background: linear-gradient(135deg, var(--accent3), #5dbfb7);
-  }
+  .avatar.user { background: linear-gradient(135deg, var(--accent3), #5dbfb7); }
 
   .bubble {
-    max-width: 72%;
-    padding: 13px 17px;
-    border-radius: 18px;
-    font-size: 0.92rem;
-    line-height: 1.65;
-    box-shadow: 0 3px 12px var(--shadow);
+    max-width: 72%; padding: 13px 17px;
+    border-radius: 18px; font-size: 0.92rem;
+    line-height: 1.65; box-shadow: 0 3px 12px var(--shadow);
   }
 
   .bubble.ai {
-    background: var(--bubble-ai);
-    border-bottom-left-radius: 4px;
-    color: var(--text);
-    border: 1px solid rgba(232,132,90,0.12);
+    background: white; border-bottom-left-radius: 4px;
+    color: var(--text); border: 1px solid rgba(232,132,90,0.12);
   }
 
   .bubble.user {
     background: linear-gradient(135deg, var(--accent), #e8a07a);
-    border-bottom-right-radius: 4px;
-    color: white;
+    border-bottom-right-radius: 4px; color: white;
   }
 
-  /* Typing indicator */
   .typing-indicator {
-    display: flex;
-    gap: 5px;
-    padding: 14px 17px;
-    align-items: center;
+    display: flex; gap: 5px; padding: 14px 17px; align-items: center;
   }
 
   .typing-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--accent2);
-    border-radius: 50%;
-    animation: typingBounce 1.2s ease-in-out infinite;
+    width: 7px; height: 7px; background: var(--accent2);
+    border-radius: 50%; animation: typingBounce 1.2s ease-in-out infinite;
   }
 
   .typing-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -332,18 +232,11 @@
     40% { transform: translateY(-7px); opacity: 1; }
   }
 
-  /* Input area */
-  .input-area {
-    padding: 14px 0 22px;
-    flex-shrink: 0;
-  }
+  .input-area { padding: 14px 0 22px; flex-shrink: 0; }
 
   .input-wrapper {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    background: white;
-    border-radius: 26px;
+    display: flex; align-items: flex-end; gap: 10px;
+    background: white; border-radius: 26px;
     padding: 10px 10px 10px 20px;
     box-shadow: 0 4px 24px var(--shadow), 0 1px 4px rgba(0,0,0,0.05);
     border: 1.5px solid rgba(232,132,90,0.18);
@@ -356,76 +249,55 @@
   }
 
   #userInput {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-family: 'Lato', sans-serif;
-    font-size: 0.93rem;
-    color: var(--text);
-    background: transparent;
-    resize: none;
-    min-height: 22px;
-    max-height: 120px;
-    line-height: 1.5;
+    flex: 1; border: none; outline: none;
+    font-family: 'Lato', sans-serif; font-size: 0.93rem;
+    color: var(--text); background: transparent;
+    resize: none; min-height: 22px; max-height: 120px; line-height: 1.5;
   }
 
-  #userInput::placeholder {
-    color: var(--muted);
-    font-weight: 300;
-  }
+  #userInput::placeholder { color: var(--muted); font-weight: 300; }
 
   .send-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.22s ease;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.22s ease;
     box-shadow: 0 2px 10px rgba(232,132,90,0.35);
   }
 
-  .send-btn:hover {
-    transform: scale(1.08);
-    box-shadow: 0 4px 18px rgba(232,132,90,0.5);
-  }
-
+  .send-btn:hover { transform: scale(1.08); box-shadow: 0 4px 18px rgba(232,132,90,0.5); }
   .send-btn:active { transform: scale(0.95); }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
 
-  .send-btn svg {
-    width: 18px;
-    height: 18px;
-    fill: white;
-  }
-
-  /* Mood emojis decorative */
   .mood-bar {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    padding: 6px 0 0;
-    font-size: 1.1rem;
-    opacity: 0.55;
+    display: flex; justify-content: center;
+    gap: 18px; padding: 6px 0 0;
+    font-size: 1.1rem; opacity: 0.55;
   }
 
-  /* Scrollbar */
+  #installBanner {
+    display: none; position: fixed; bottom: 80px;
+    left: 50%; transform: translateX(-50%); z-index: 999;
+    background: white; border-radius: 16px; padding: 14px 18px;
+    box-shadow: 0 8px 32px rgba(180,120,80,0.22);
+    border: 1.5px solid rgba(232,132,90,0.2);
+    align-items: center; gap: 12px;
+    max-width: 340px; width: 90%;
+    font-family: 'Lato', sans-serif;
+  }
+
   * { scrollbar-width: thin; scrollbar-color: var(--accent2) transparent; }
 </style>
 </head>
 <body>
 
-<!-- Floating particles -->
 <div class="particles" id="particles"></div>
 
-<!-- Install banner (pojawia się automatycznie na Android) -->
-<div id="installBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:999;background:white;border-radius:16px;padding:14px 18px;box-shadow:0 8px 32px rgba(180,120,80,0.22);border:1.5px solid rgba(232,132,90,0.2);align-items:center;gap:12px;max-width:340px;width:90%;font-family:'Lato',sans-serif;">
+<div id="installBanner">
   <span style="font-size:1.4rem">📲</span>
-  <div style="flex:1;font-size:0.83rem;color:#3a2e28;line-height:1.4"><strong>Dodaj Soleil</strong> do ekranu głównego i korzystaj jak z aplikacji</div>
-  <button id="installBtn" style="background:#e8845a;color:white;border:none;border-radius:10px;padding:7px 13px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif;white-space:nowrap">Dodaj</button>
+  <div style="flex:1;font-size:0.83rem;color:#3a2e28;line-height:1.4"><strong>Dodaj Soleil</strong> do ekranu głównego</div>
+  <button id="installBtn" style="background:#e8845a;color:white;border:none;border-radius:10px;padding:7px 13px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif">Dodaj</button>
   <button id="installDismiss" style="background:none;border:none;color:#9e8e83;cursor:pointer;font-size:1.1rem;padding:0 2px">✕</button>
 </div>
 
@@ -456,9 +328,7 @@
     <div class="input-wrapper">
       <textarea id="userInput" placeholder="Napisz mi o swoim dniu, problemie lub jak się czujesz..." rows="1"></textarea>
       <button class="send-btn" onclick="sendMessage()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
     <div class="mood-bar">🌸 🌈 ✨ 🌻 💛 🌿 🤗</div>
@@ -467,42 +337,12 @@
 
 <script>
 // ═══════════════════════════════════════════════════
-//  🔑 WSTAW TUTAJ SWÓJ KLUCZ API
-//  Wejdź na console.anthropic.com → API Keys → Create Key
-//  Przykład: 'sk-ant-api03-...'
+//  🔑 WSTAW TUTAJ SWÓJ KLUCZ API (tylko do testów!)
+//  Przed wdrożeniem przenieś go do Vercel Env Variables
 // ═══════════════════════════════════════════════════
 const ANTHROPIC_API_KEY = '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';
 
-// ═══════════════════════════════════════════════════
-//  PWA — instalacja na ekranie głównym
-// ═══════════════════════════════════════════════════
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBanner').style.display = 'flex';
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('installBtn')?.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    document.getElementById('installBanner').style.display = 'none';
-  });
-  document.getElementById('installDismiss')?.addEventListener('click', () => {
-    document.getElementById('installBanner').style.display = 'none';
-  });
-});
-
-// Service Worker rejestracja (wymaga pliku sw.js w tym samym folderze)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
-}
-</script>
+// Particles
 (function() {
   const container = document.getElementById('particles');
   const colors = ['#e8845a','#f2b48a','#7dbdb5','#ffd6b0','#b5e0dc'];
@@ -510,16 +350,32 @@ if ('serviceWorker' in navigator) {
     const p = document.createElement('div');
     p.className = 'particle';
     const size = 6 + Math.random() * 20;
-    p.style.cssText = `
-      width:${size}px;height:${size}px;
-      left:${Math.random()*100}%;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      animation-duration:${12+Math.random()*18}s;
-      animation-delay:${-Math.random()*20}s;
-    `;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${12+Math.random()*18}s;animation-delay:${-Math.random()*20}s;`;
     container.appendChild(p);
   }
 })();
+
+// PWA install banner
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').style.display = 'flex';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt = null;
+  document.getElementById('installBanner').style.display = 'none';
+});
+document.getElementById('installDismiss').addEventListener('click', () => {
+  document.getElementById('installBanner').style.display = 'none';
+});
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 
 // Auto-resize textarea
 const input = document.getElementById('userInput');
@@ -527,12 +383,8 @@ input.addEventListener('input', function() {
   this.style.height = 'auto';
   this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
-
 input.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
 const chatWindow = document.getElementById('chatWindow');
@@ -541,42 +393,31 @@ let conversationHistory = [];
 let firstMessage = true;
 
 function appendMessage(role, text) {
-  if (firstMessage) {
-    welcomeMsg.style.display = 'none';
-    firstMessage = false;
-  }
-
+  if (firstMessage) { welcomeMsg.style.display = 'none'; firstMessage = false; }
   const row = document.createElement('div');
   row.className = `message-row ${role}`;
-
   const avatar = document.createElement('div');
   avatar.className = `avatar ${role}`;
   avatar.textContent = role === 'ai' ? '☀️' : '🙂';
-
   const bubble = document.createElement('div');
   bubble.className = `bubble ${role}`;
   bubble.innerHTML = text.replace(/\n/g, '<br>');
-
   row.appendChild(avatar);
   row.appendChild(bubble);
   chatWindow.appendChild(row);
   chatWindow.scrollTop = chatWindow.scrollHeight;
-  return bubble;
 }
 
 function showTyping() {
   const row = document.createElement('div');
   row.className = 'message-row ai';
   row.id = 'typingRow';
-
   const avatar = document.createElement('div');
   avatar.className = 'avatar ai';
   avatar.textContent = '☀️';
-
   const bubble = document.createElement('div');
   bubble.className = 'bubble ai typing-indicator';
   bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-
   row.appendChild(avatar);
   row.appendChild(bubble);
   chatWindow.appendChild(row);
@@ -596,16 +437,13 @@ function sendSuggestion(text) {
 async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
-
   input.value = '';
   input.style.height = 'auto';
-
   appendMessage('user', text);
   conversationHistory.push({ role: 'user', content: text });
-
   showTyping();
 
-  const systemPrompt = `Jesteś Soleil — ciepłym, empatycznym przyjacielem AI, który specjalizuje się w poprawianiu ludziom nastroju i pomaganiu im zrozumieć i przepracować swoje problemy. 
+  const systemPrompt = `Jesteś Soleil — ciepłym, empatycznym przyjacielem AI, który specjalizuje się w poprawianiu ludziom nastroju i pomaganiu im zrozumieć i przepracować swoje problemy.
 
 Twoje główne zadania:
 1. Aktywnie słuchać i okazywać szczere zrozumienie i empatię
@@ -613,16 +451,15 @@ Twoje główne zadania:
 3. Pomagać znaleźć dobre strony trudnych sytuacji
 4. Dawać konkretne, ciepłe rady jak poprawić nastrój
 5. Wzmacniać poczucie własnej wartości rozmówcy
-6. Używać przyjaznego, ciepłego języka z okazjonalnymi emoji (ale nie przesadzać)
 
 Styl komunikacji:
 - Mów po polsku, używaj ciepłego i naturalnego tonu
 - Zacznij od potwierdzenia uczuć rozmówcy zanim zaproponujesz rozwiązanie
-- Bądź konkretny/a i praktyczny/a, nie tylko filozoficzny/a
-- Używaj metafor i obrazowych porównań, które pomagają zrozumieć problemy
+- Bądź konkretny/a i praktyczny/a
 - Nigdy nie bagatelizuj problemów
-- Staraj się zakończyć odpowiedź czymś motywującym lub pozytywnym
-- Odpowiedzi powinny być ciepłe ale nie za długie — maks 3-4 akapity`;
+- Zakończ odpowiedź czymś motywującym lub pozytywnym
+- Odpowiedzi maks 3-4 akapity
+- Jeśli ktoś wspomina myśli samobójcze, zasugeruj Telefon Zaufania: 116 123`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -634,7 +471,7 @@ Styl komunikacji:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
         system: systemPrompt,
         messages: conversationHistory
@@ -644,13 +481,18 @@ Styl komunikacji:
     const data = await response.json();
     removeTyping();
 
-    const reply = data.content?.[0]?.text || 'Przepraszam, coś poszło nie tak. Spróbuj jeszcze raz. 🌸';
+    if (!response.ok) {
+      appendMessage('ai', `Błąd: ${data.error?.message || 'sprawdź klucz API'}. 🌸`);
+      return;
+    }
+
+    const reply = data.content?.[0]?.text || 'Przepraszam, spróbuj jeszcze raz. 🌸';
     conversationHistory.push({ role: 'assistant', content: reply });
     appendMessage('ai', reply);
 
   } catch (err) {
     removeTyping();
-    appendMessage('ai', 'Przepraszam, mam chwilowe trudności z połączeniem. Ale jestem tu dla Ciebie — spróbuj jeszcze raz za chwilę. 🌸');
+    appendMessage('ai', 'Przepraszam, mam chwilowe trudności z połączeniem. Spróbuj jeszcze raz za chwilę. 🌸');
   }
 }
 </script>

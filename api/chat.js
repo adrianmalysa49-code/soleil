@@ -1,35 +1,25 @@
-// ═══════════════════════════════════════════════════
-//  Soleil — Vercel Serverless Function
-//  Plik: api/chat.js
-//
-//  Ten plik ukrywa klucz API po stronie serwera.
-//  Klucz wpisujesz TYLKO w ustawieniach Vercel:
-//  Project → Settings → Environment Variables
-//  Nazwa zmiennej: ANTHROPIC_API_KEY
-// ═══════════════════════════════════════════════════
-
 export default async function handler(req, res) {
 
-  // Tylko metoda POST jest dozwolona
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Metoda niedozwolona' });
   }
 
-  // Pobierz klucz ze zmiennych środowiskowych Vercel (nigdy nie trafia do przeglądarki)
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Brak klucza API — dodaj go w ustawieniach Vercel' });
+    return res.status(500).json({ error: 'Brak klucza API' });
   }
 
   try {
-    const { messages } = req.body;
+    const { messages, userId } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Nieprawidłowe dane' });
     }
 
-    const systemPrompt = `Jesteś Soleil — ciepłym, empatycznym przyjacielem AI, który specjalizuje się w poprawianiu ludziom nastroju i pomaganiu im zrozumieć i przepracować swoje problemy. 
+    const systemPrompt = `Jesteś Soleil — emocjonalnie inteligentnym towarzyszem AI.
 
 Twoje główne zadania:
 1. Aktywnie słuchać i okazywać szczere zrozumienie i empatię
@@ -50,7 +40,8 @@ Styl komunikacji:
 - Odpowiedzi powinny być ciepłe ale nie za długie — maks 3-4 akapity
 - Jeśli ktoś wspomina myśli samobójcze lub krzywdzenie siebie, zawsze delikatnie zasugeruj kontakt z Telefonem Zaufania: 116 123 (bezpłatny, całą dobę)`;
 
-    // Wywołanie API Anthropic po stronie serwera
+
+    // Wywołaj Anthropic API
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -73,6 +64,61 @@ Styl komunikacji:
 
     const data = await response.json();
     const reply = data.content?.[0]?.text || '';
+
+    // Zapisz rozmowę do Supabase jeśli mamy userId i klucze
+    if (userId && supabaseUrl && supabaseKey) {
+      const allMessages = [...messages, { role: 'assistant', content: reply }];
+
+      // Sprawdź czy rozmowa już istnieje
+      const checkRes = await fetch(
+        `${supabaseUrl}/rest/v1/conversations?user_id=eq.${userId}&order=updated_at.desc&limit=1`,
+        {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const existing = await checkRes.json();
+
+      if (existing && existing.length > 0) {
+        // Zaktualizuj istniejącą rozmowę
+        await fetch(
+          `${supabaseUrl}/rest/v1/conversations?id=eq.${existing[0].id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              messages: allMessages,
+              updated_at: new Date().toISOString()
+            })
+          }
+        );
+      } else {
+        // Utwórz nową rozmowę
+        await fetch(
+          `${supabaseUrl}/rest/v1/conversations`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              messages: allMessages
+            })
+          }
+        );
+      }
+    }
 
     return res.status(200).json({ reply });
 

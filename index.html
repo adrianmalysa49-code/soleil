@@ -13,6 +13,7 @@
 <meta name="theme-color" content="#e8845a">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -50,8 +51,6 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   header { padding: 24px 0 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-
-  /* Strzałka powrotu */
   .back-btn {
     width: 36px; height: 36px; border-radius: 50%;
     background: white; border: 1.5px solid rgba(232,132,90,0.25);
@@ -62,7 +61,6 @@
   }
   .back-btn:hover { background: var(--accent); color: white; transform: scale(1.08); }
   .back-btn.visible { display: flex; }
-
   .logo-circle {
     width: 48px; height: 48px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -75,6 +73,7 @@
     0%, 100% { box-shadow: 0 4px 16px rgba(232,132,90,0.35); }
     50% { box-shadow: 0 4px 28px rgba(232,132,90,0.58); }
   }
+  .header-text { flex: 1; }
   .header-text h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--accent); line-height: 1; }
   .header-text p { font-size: 0.78rem; color: var(--muted); font-weight: 300; margin-top: 2px; letter-spacing: 0.04em; }
   .status-dot {
@@ -83,6 +82,89 @@
     animation: blink 2s ease-in-out infinite;
   }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* Przycisk logowania w headerze */
+  .auth-btn {
+    background: white; border: 1.5px solid rgba(232,132,90,0.25);
+    color: var(--accent); padding: 7px 14px; border-radius: 20px;
+    font-size: 0.82rem; font-family: 'Lato', sans-serif;
+    cursor: pointer; transition: all 0.22s ease;
+    box-shadow: 0 2px 8px var(--shadow); flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .auth-btn:hover { background: var(--accent); color: white; transform: translateY(-1px); }
+
+  /* Avatar użytkownika */
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent3), #5dbfb7);
+    display: none; align-items: center; justify-content: center;
+    font-size: 0.8rem; color: white; font-weight: 700;
+    cursor: pointer; flex-shrink: 0;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.22s ease;
+  }
+  .user-avatar:hover { transform: scale(1.08); }
+  .user-avatar.visible { display: flex; }
+
+  /* Popup logowania */
+  .auth-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(58, 46, 40, 0.5); backdrop-filter: blur(4px);
+    z-index: 100; align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .auth-overlay.visible { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .auth-popup {
+    background: var(--bg); border-radius: 24px;
+    padding: 32px 28px; width: 90%; max-width: 400px;
+    box-shadow: 0 20px 60px rgba(58,46,40,0.2);
+    animation: slideUp 0.3s ease;
+    position: relative;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .auth-close {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; font-size: 1.3rem;
+    color: var(--muted); cursor: pointer; padding: 4px;
+    transition: color 0.2s;
+  }
+  .auth-close:hover { color: var(--text); }
+
+  .auth-popup h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; color: var(--accent); margin-bottom: 6px;
+  }
+  .auth-popup p { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.5; }
+
+  /* Clerk montuje się tutaj */
+  #clerk-sign-in { min-height: 200px; }
+
+  /* Menu użytkownika */
+  .user-menu {
+    display: none; position: absolute; top: 80px; right: 16px;
+    background: white; border-radius: 16px; padding: 8px;
+    box-shadow: 0 8px 32px var(--shadow);
+    border: 1px solid rgba(232,132,90,0.12);
+    z-index: 50; min-width: 200px;
+    animation: slideUp 0.2s ease;
+  }
+  .user-menu.visible { display: block; }
+  .user-menu-header { padding: 10px 12px 12px; border-bottom: 1px solid rgba(232,132,90,0.1); margin-bottom: 6px; }
+  .user-menu-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+  .user-menu-email { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .user-menu-btn {
+    width: 100%; text-align: left; background: none; border: none;
+    padding: 9px 12px; border-radius: 10px; font-size: 0.86rem;
+    color: var(--text); cursor: pointer; font-family: 'Lato', sans-serif;
+    transition: background 0.15s;
+  }
+  .user-menu-btn:hover { background: rgba(232,132,90,0.08); }
+  .user-menu-btn.danger { color: #e05a5a; }
+
   .chat-window {
     flex: 1; overflow-y: auto; display: flex; flex-direction: column;
     gap: 16px; padding: 10px 4px 16px; scroll-behavior: smooth;
@@ -149,12 +231,6 @@
   .send-btn:active { transform: scale(0.95); }
   .send-btn svg { width: 18px; height: 18px; fill: white; }
   .mood-bar { display: flex; justify-content: center; gap: 18px; padding: 6px 0 0; font-size: 1.1rem; opacity: 0.55; }
-  #installBanner {
-    display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-    z-index: 999; background: white; border-radius: 16px; padding: 14px 18px;
-    box-shadow: 0 8px 32px rgba(180,120,80,0.22); border: 1.5px solid rgba(232,132,90,0.2);
-    align-items: center; gap: 12px; max-width: 340px; width: 90%; font-family: 'Lato', sans-serif;
-  }
   * { scrollbar-width: thin; scrollbar-color: var(--accent2) transparent; }
 </style>
 </head>
@@ -162,11 +238,23 @@
 
 <div class="particles" id="particles"></div>
 
-<div id="installBanner">
-  <span style="font-size:1.4rem">📲</span>
-  <div style="flex:1;font-size:0.83rem;color:#3a2e28;line-height:1.4"><strong>Dodaj Soleil</strong> do ekranu głównego</div>
-  <button id="installBtn" style="background:#e8845a;color:white;border:none;border-radius:10px;padding:7px 13px;font-size:0.8rem;cursor:pointer;font-family:'Lato',sans-serif">Dodaj</button>
-  <button id="installDismiss" style="background:none;border:none;color:#9e8e83;cursor:pointer;font-size:1.1rem;padding:0 2px">✕</button>
+<!-- Popup logowania -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-popup">
+    <button class="auth-close" onclick="closeAuth()">✕</button>
+    <h2>Witaj w Soleil ☀️</h2>
+    <p>Zaloguj się żeby Soleil pamiętał Twoje rozmowy i był zawsze przy Tobie.</p>
+    <div id="clerk-sign-in"></div>
+  </div>
+</div>
+
+<!-- Menu użytkownika -->
+<div class="user-menu" id="userMenu">
+  <div class="user-menu-header">
+    <div class="user-menu-name" id="userName">—</div>
+    <div class="user-menu-email" id="userEmail">—</div>
+  </div>
+  <button class="user-menu-btn danger" onclick="signOut()">🚪 Wyloguj się</button>
 </div>
 
 <div class="app">
@@ -177,13 +265,16 @@
       <h1>Soleil</h1>
       <p><span class="status-dot"></span>Zawsze tutaj, by pomóc Ci poczuć się lepiej</p>
     </div>
+    <!-- Przycisk logowania / avatar -->
+    <button class="auth-btn" id="loginBtn" onclick="openAuth()">Zaloguj się</button>
+    <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()"></div>
   </header>
 
   <div class="chat-window" id="chatWindow">
     <div class="welcome" id="welcomeMsg">
       <span class="sun">☀️</span>
       <h2>Hej, jestem tu dla Ciebie</h2>
-      <p>Możesz mi powiedzieć wszystko anonimowo — swoje troski, problemy, smutki. Pomogę Ci spojrzeć na nie z nowej perspektywy i sprawi, że poczujesz się lepiej. 💛</p>
+      <p>Możesz mi powiedzieć wszystko — swoje troski, problemy, smutki. Pomogę Ci spojrzeć na nie z nowej perspektywy i sprawi, że poczujesz się lepiej. 💛</p>
       <div class="suggestions">
         <button class="suggestion-btn" onclick="sendSuggestion('Czuję się dziś bardzo smutny/a')">😔 Jestem smutny/a</button>
         <button class="suggestion-btn" onclick="sendSuggestion('Mam problem w pracy i nie wiem co robić')">💼 Problem w pracy / szkole</button>
@@ -205,7 +296,98 @@
 </div>
 
 <script>
-// Particles
+// ═══════════════════════════════════════
+//  Clerk — logowanie
+// ═══════════════════════════════════════
+const CLERK_PUBLISHABLE_KEY = 'pk_test_YXdhaXRlZC1taW5rLTQ1LmNsZXJrLmFjY291bnRzLmRldiQ';
+
+let clerk = null;
+let currentUser = null;
+
+async function initClerk() {
+  try {
+    clerk = window.Clerk;
+    await clerk.load({ publishableKey: CLERK_PUBLISHABLE_KEY });
+
+    clerk.addListener(({ user }) => {
+      currentUser = user;
+      updateAuthUI(user);
+      if (user) closeAuth();
+    });
+
+    updateAuthUI(clerk.user);
+  } catch (err) {
+    console.error('Clerk error:', err);
+  }
+}
+
+function updateAuthUI(user) {
+  const loginBtn = document.getElementById('loginBtn');
+  const userAvatar = document.getElementById('userAvatar');
+
+  if (user) {
+    loginBtn.style.display = 'none';
+    userAvatar.classList.add('visible');
+    const initials = (user.firstName?.[0] || user.emailAddresses?.[0]?.emailAddress?.[0] || '?').toUpperCase();
+    userAvatar.textContent = initials;
+    document.getElementById('userName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Użytkownik';
+    document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || '';
+  } else {
+    loginBtn.style.display = 'block';
+    userAvatar.classList.remove('visible');
+  }
+}
+
+function openAuth() {
+  document.getElementById('authOverlay').classList.add('visible');
+  if (clerk) {
+    clerk.mountSignIn(document.getElementById('clerk-sign-in'), {
+      routing: 'virtual',
+      appearance: {
+        variables: {
+          colorPrimary: '#e8845a',
+          colorBackground: '#fdf6ee',
+          borderRadius: '12px',
+          fontFamily: 'Lato, sans-serif'
+        }
+      }
+    });
+  }
+}
+
+function closeAuth() {
+  document.getElementById('authOverlay').classList.remove('visible');
+  if (clerk) clerk.unmountSignIn(document.getElementById('clerk-sign-in'));
+}
+
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('visible');
+}
+
+async function signOut() {
+  if (clerk) {
+    await clerk.signOut();
+    document.getElementById('userMenu').classList.remove('visible');
+  }
+}
+
+// Zamknij menu po kliknięciu poza nim
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('userMenu');
+  const avatar = document.getElementById('userAvatar');
+  if (!menu.contains(e.target) && !avatar.contains(e.target)) {
+    menu.classList.remove('visible');
+  }
+});
+
+// Zamknij popup po kliknięciu tła
+document.getElementById('authOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('authOverlay')) closeAuth();
+});
+
+// ═══════════════════════════════════════
+//  Particles
+// ═══════════════════════════════════════
 (function() {
   const container = document.getElementById('particles');
   const colors = ['#e8845a','#f2b48a','#7dbdb5','#ffd6b0','#b5e0dc'];
@@ -219,26 +401,13 @@
 })();
 
 // PWA
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBanner').style.display = 'flex';
-});
-document.getElementById('installBtn').addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt = null;
-  document.getElementById('installBanner').style.display = 'none';
-});
-document.getElementById('installDismiss').addEventListener('click', () => {
-  document.getElementById('installBanner').style.display = 'none';
-});
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 
-// Chat
+// ═══════════════════════════════════════
+//  Chat
+// ═══════════════════════════════════════
 const input = document.getElementById('userInput');
 const chatWindow = document.getElementById('chatWindow');
 const welcomeMsg = document.getElementById('welcomeMsg');
@@ -255,17 +424,12 @@ input.addEventListener('keydown', function(e) {
 });
 
 function goBack() {
-  // Wyczyść wiadomości
   const messages = chatWindow.querySelectorAll('.message-row');
   messages.forEach(m => m.remove());
-  // Pokaż ekran powitalny
   welcomeMsg.style.display = 'block';
-  // Ukryj strzałkę
   backBtn.classList.remove('visible');
-  // Reset historii
   conversationHistory = [];
   firstMessage = true;
-  // Wyczyść pole tekstowe
   input.value = '';
   input.style.height = 'auto';
 }
@@ -273,7 +437,7 @@ function goBack() {
 function appendMessage(role, text) {
   if (firstMessage) {
     welcomeMsg.style.display = 'none';
-    backBtn.classList.add('visible'); // Pokaż strzałkę
+    backBtn.classList.add('visible');
     firstMessage = false;
   }
   const row = document.createElement('div');
@@ -326,10 +490,12 @@ async function sendMessage() {
   showTyping();
 
   try {
+    const userId = currentUser?.id || null;
+
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: conversationHistory })
+      body: JSON.stringify({ messages: conversationHistory, userId })
     });
 
     const data = await response.json();
@@ -349,6 +515,9 @@ async function sendMessage() {
     appendMessage('ai', 'Przepraszam, mam chwilowe trudności z połączeniem. Spróbuj jeszcze raz za chwilę. 🌸');
   }
 }
+
+// Inicjalizuj Clerk po załadowaniu
+window.addEventListener('load', initClerk);
 </script>
 </body>
 </html>

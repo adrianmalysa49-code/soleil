@@ -306,8 +306,8 @@ let currentUser = null;
 
 async function initClerk() {
   try {
-    clerk = window.Clerk;
-    await clerk.load({ publishableKey: CLERK_PUBLISHABLE_KEY });
+   clerk = new window.Clerk(CLERK_PUBLISHABLE_KEY);
+await clerk.load();
 
     clerk.addListener(({ user }) => {
       currentUser = user;

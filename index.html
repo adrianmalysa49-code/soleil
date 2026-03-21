@@ -312,9 +312,8 @@ let currentUser = null;
 
 async function initClerk() {
   try {
-   clerk = new window.Clerk(CLERK_PUBLISHABLE_KEY);
-await clerk.load();
-
+  clerk = window.Clerk;
+await clerk.load({ publishableKey: CLERK_PUBLISHABLE_KEY });
     clerk.addListener(({ user }) => {
       currentUser = user;
       updateAuthUI(user);
@@ -523,7 +522,9 @@ async function sendMessage() {
 }
 
 // Inicjalizuj Clerk po załadowaniu
-window.addEventListener('load', () => setTimeout(initClerk, 500));
+window.__clerk_init = initClerk;
+document.querySelector('script[data-clerk-publishable-key]').onload = initClerk;
+window.addEventListener('load', () => setTimeout(initClerk, 1000));
 </script>
 </body>
 </html>

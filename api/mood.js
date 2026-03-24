@@ -10,7 +10,16 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { userId, mood, note } = req.body;
     if (!userId || !mood) return res.status(400).json({ error: 'Brak danych' });
-
+// Sprawdź czy użytkownik już dziś zapisał nastrój
+    const today = new Date().toISOString().split('T')[0];
+    const checkToday = await fetch(
+      `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${today}T00:00:00`,
+      { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+    );
+    const todayLogs = await checkToday.json();
+    if (todayLogs && todayLogs.length > 0) {
+      return res.status(200).json({ success: true, skipped: true });
+    }
     const response = await fetch(`${supabaseUrl}/rest/v1/mood_logs`, {
       method: 'POST',
       headers: {

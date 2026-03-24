@@ -407,7 +407,6 @@ async function initClerk() {
     if (clerk.user) checkDailyMood();
   } catch (err) { console.error('Clerk error:', err); }
 }
-
 function updateAuthUI(user) {
   const loginBtn = document.getElementById('loginBtn');
   const userAvatar = document.getElementById('userAvatar');

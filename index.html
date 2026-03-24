@@ -352,6 +352,7 @@
       <p><span class="status-dot"></span>Zawsze tutaj dla Ciebie</p>
     </div>
     <div class="header-actions">
+      <span id="streakBadge" style="display:none;background:linear-gradient(135deg,#ff6b35,#f7c59f);color:white;padding:5px 11px;border-radius:20px;font-size:0.78rem;font-weight:700;box-shadow:0 2px 8px rgba(255,107,53,0.3)"></span>
       <button class="week-btn" id="weekBtn" onclick="openSummary()">📊 Mój tydzień</button>
       <button class="auth-btn" id="loginBtn" onclick="openAuth()">Zaloguj się</button>
       <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()"></div>
@@ -419,13 +420,27 @@ function updateAuthUI(user) {
     userAvatar.textContent = initials;
     document.getElementById('userName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Użytkownik';
     document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || '';
+    loadStreak(user.id);
   } else {
     loginBtn.style.display = 'block';
     userAvatar.classList.remove('visible');
     weekBtn.classList.remove('visible');
+    document.getElementById('streakBadge').style.display = 'none';
   }
 }
-
+async function loadStreak(userId) {
+  try {
+    const res = await fetch(`/api/streak?userId=${userId}`);
+    const data = await res.json();
+    const badge = document.getElementById('streakBadge');
+    if (data.streak > 0) {
+      badge.textContent = `🔥 ${data.streak}`;
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch (err) { console.error(err); }
+}
 function openAuth() {
   document.getElementById('authOverlay').classList.add('visible');
   if (clerk) clerk.mountSignIn(document.getElementById('clerk-sign-in'), {

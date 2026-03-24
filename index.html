@@ -374,7 +374,7 @@
 
   <div class="input-area">
     <div class="input-wrapper">
-      <textarea id="userInput" placeholder="Napisz mi o swoim dniu, problemie lub jak się czujesz..." rows="1"></textarea>
+      <textarea id="userInput" placeholder="Napisz mi o swoim dniu, jak się teraz czujesz?" rows="1"></textarea>
       <button class="send-btn" onclick="sendMessage()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -444,7 +444,8 @@ async function signOut() {
 
 // ═══ NASTRÓJ ═══
 function checkDailyMood() {
-  const lastMood = localStorage.getItem('soleil_last_mood_date');
+ const key = `soleil_last_mood_date_${currentUser.id}`;
+  const lastMood = localStorage.getItem(key);
   const today = new Date().toDateString();
   if (lastMood !== today) {
     setTimeout(() => document.getElementById('moodOverlay').classList.add('visible'), 1000);
@@ -474,7 +475,7 @@ async function saveMood() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: currentUser.id, mood: selectedMood, note })
     });
-    localStorage.setItem('soleil_last_mood_date', new Date().toDateString());
+localStorage.setItem(`soleil_last_mood_date_${currentUser.id}`, new Date().toDateString());
     closeMood();
 
     // Wyślij wiadomość od Soleil nawiązującą do nastroju

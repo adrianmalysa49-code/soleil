@@ -1,3 +1,4 @@
+
 export default async function handler(req, res) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -10,7 +11,8 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { userId, mood, note } = req.body;
     if (!userId || !mood) return res.status(400).json({ error: 'Brak danych' });
-// Sprawdź czy użytkownik już dziś zapisał nastrój
+
+    // Sprawdź czy użytkownik już dziś zapisał nastrój
     const today = new Date().toISOString().split('T')[0];
     const checkToday = await fetch(
       `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${today}T00:00:00`,
@@ -20,6 +22,8 @@ export default async function handler(req, res) {
     if (todayLogs && todayLogs.length > 0) {
       return res.status(200).json({ success: true, skipped: true });
     }
+
+    // Zapisz nastrój
     const response = await fetch(`${supabaseUrl}/rest/v1/mood_logs`, {
       method: 'POST',
       headers: {
@@ -31,7 +35,16 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) return res.status(500).json({ error: 'Błąd zapisu' });
-    return res.status(200).json({ success: true });
+
+    // Zaktualizuj streak
+    const streakRes = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : ''}/api/streak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    const streakData = streakRes.ok ? await streakRes.json() : { streak: 0 };
+
+    return res.status(200).json({ success: true, streak: streakData.streak });
   }
 
   // GET — pobierz nastroje z ostatnich 7 dni
@@ -43,12 +56,7 @@ export default async function handler(req, res) {
 
     const response = await fetch(
       `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${sevenDaysAgo}&order=created_at.desc`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      }
+      { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
     );
 
     const data = await response.json();

@@ -420,6 +420,41 @@ function updateAuthUI(user) {
     document.getElementById('userName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Użytkownik';
     document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || '';
     loadStreak(user.id);
+   async function loadHistory(userId) {
+  try {
+    const res = await fetch(`/api/history?userId=${userId}`);
+    const data = await res.json();
+    if (data.messages && data.messages.length > 0) {
+      conversationHistory = data.messages;
+      // Pokaż ostatnie 6 wiadomości
+      const recent = data.messages.slice(-6);
+      welcomeMsg.style.display = 'none';
+      backBtn.classList.add('visible');
+      firstMessage = false;
+      recent.forEach(msg => {
+        appendMessageSilent(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+      });
+      appendMessage('ai', 'Hej, dobrze Cię znów widzieć! Pamiętam naszą ostatnią rozmowę. Jak się teraz czujesz? 🌸');
+    }
+  } catch (err) { console.error('Historia błąd:', err); }
+}
+
+function appendMessageSilent(role, text) {
+  if (firstMessage) { welcomeMsg.style.display = 'none'; backBtn.classList.add('visible'); firstMessage = false; }
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${role}`;
+  avatar.textContent = role === 'ai' ? '☀️' : '🙂';
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`;
+  bubble.innerHTML = text.replace(/\n/g, '<br>');
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  chatWindow.appendChild(row);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+    loadHistory(user.id);
   } else {
     loginBtn.style.display = 'block';
     userAvatar.classList.remove('visible');

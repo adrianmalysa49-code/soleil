@@ -1,4 +1,3 @@
-
 export default async function handler(req, res) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -36,15 +35,69 @@ export default async function handler(req, res) {
 
     if (!response.ok) return res.status(500).json({ error: 'Błąd zapisu' });
 
-    // Zaktualizuj streak
-    const streakRes = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : ''}/api/streak`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
-    });
-    const streakData = streakRes.ok ? await streakRes.json() : { streak: 0 };
+    // Zaktualizuj streak bezpośrednio w Supabase
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-    return res.status(200).json({ success: true, streak: streakData.streak });
+    const statsRes = await fetch(
+      `${supabaseUrl}/rest/v1/user_stats?user_id=eq.${userId}`,
+      { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+    );
+    const stats = await statsRes.json();
+
+    let newStreak = 1;
+    let longestStreak = 1;
+
+    if (stats && stats.length > 0) {
+      const current = stats[0];
+      longestStreak = current.longest_streak || 1;
+
+      if (current.last_streak_date === today) {
+        return res.status(200).json({ success: true, streak: current.streak });
+      } else if (current.last_streak_date === yesterday) {
+        newStreak = (current.streak || 0) + 1;
+        longestStreak = Math.max(newStreak, longestStreak);
+      } else {
+        newStreak = 1;
+      }
+
+      await fetch(
+        `${supabaseUrl}/rest/v1/user_stats?user_id=eq.${userId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            streak: newStreak,
+            last_streak_date: today,
+            longest_streak: longestStreak,
+            updated_at: new Date().toISOString()
+          })
+        }
+      );
+    } else {
+      await fetch(
+        `${supabaseUrl}/rest/v1/user_stats`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            streak: 1,
+            last_streak_date: today,
+            longest_streak: 1
+          })
+        }
+      );
+    }
+
+    return res.status(200).json({ success: true, streak: newStreak });
   }
 
   // GET — pobierz nastroje z ostatnich 7 dni

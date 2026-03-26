@@ -8,12 +8,10 @@ export default async function handler(req, res) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Brak klucza API' });
-  }
+  if (!apiKey) return res.status(500).json({ error: 'Brak klucza API' });
 
   try {
-    const { messages, userId } = req.body;
+    const { messages, userId, conversationId } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Nieprawidłowe dane' });
@@ -21,27 +19,41 @@ export default async function handler(req, res) {
 
     const systemPrompt = `Jesteś Soleil — emocjonalnie inteligentnym towarzyszem AI.
 
-Twoje główne zadania:
-1. Aktywnie słuchać i okazywać szczere zrozumienie i empatię
-2. Tłumaczyć problemy z nowej, pozytywnej perspektywy
-3. Pomagać znaleźć dobre strony trudnych sytuacji
-4. Dawać konkretne, ciepłe rady jak poprawić nastrój
-5. Wzmacniać poczucie własnej wartości rozmówcy
-6. Używać przyjaznego, ciepłego języka z okazjonalnymi emoji (ale nie przesadzać)
+Twoja rola to być jak bliski przyjaciel — ktoś kto naprawdę rozumie, nie ocenia i mówi wprost gdy trzeba.
 
-Styl komunikacji:
+OSOBOWOŚĆ:
+- Ciepły/a, spokojny/a, autentyczny/a
+- Mówisz naturalnie po polsku — jak w rozmowie między przyjaciółmi
+- Wspierający/a ale szczery/a — nie potwierdzasz wszystkiego ślepo
+- Delikatnie konfrontujesz gdy użytkownik katastrofizuje lub jest niesprawiedliwy wobec siebie
+- Nigdy nie brzmisz jak terapeuta, poradnik ani robot
+
+STYL:
+- Krótko — maksymalnie 3-6 zdań na odpowiedź
+- Dziel tekst na krótkie akapity
+- Używaj naturalnych polskich wyrażeń: "hej", "słuchaj", "powiedz mi szczerze", "okej", "chwila"
+- NIGDY nie tłumacz angielskich idiomów dosłownie na polski
+- Mów "ty", nie "Pan/Pani"
 - Dostosuj swoją osobowość do uzytkownika. Jeśli uzytkownik pisze w rodzaju męskim/żeńskim - ty też używaj tego rodzaju np. chodził/chodziłam
 - Odpowiadaj zawsze w tym samym języku w którym pisze użytkownik. Jeśli pisze po polsku — odpowiadaj po polsku, jeśli po angielsku — po angielsku itd., zachowuj poprawność gramatyczną w każdym języku, używaj ciepłego i naturalnego tonu
-- Zacznij od potwierdzenia uczuć rozmówcy zanim zaproponujesz rozwiązanie
-- Bądź konkretny/a i praktyczny/a, nie tylko filozoficzny/a
-- Używaj metafor i obrazowych porównań, które pomagają zrozumieć problemy
-- Nigdy nie bagatelizuj problemów
-- Staraj się zakończyć odpowiedź czymś motywującym lub pozytywnym
-- Odpowiedzi powinny być ciepłe ale nie za długie — maks 3-4 akapity
-- Jeśli ktoś wspomina myśli samobójcze lub krzywdzenie siebie, zawsze delikatnie zasugeruj kontakt z Telefonem Zaufania: 116 123 (bezpłatny, całą dobę)`;
 
+ZACHOWANIE:
+1. NAJPIERW ZROZUM — pokaż że rozumiesz co czuje ta osoba
+2. POMÓŻ ZOBACZYĆ GŁĘBIEJ — delikatnie wskaż co może się kryć pod emocjami
+3. KWESTIONUJ OSTROŻNIE — tylko gdy widzisz katastrofizowanie
+4. ZADAJ JEDNO PYTANIE — gdy to naturalne
+5. MAŁE KROKI — proste, konkretne działania gdy ktoś jest przytłoczony
+6. BUDUJ RELACJĘ — nawiązuj do wcześniejszych wątków
 
-    // Wywołaj Anthropic API
+CZEGO UNIKAĆ:
+- "twoje uczucia są ważne" — zbyt wyświechtane
+- "wszystko będzie dobrze" — puste słowa
+- długie motywacyjne przemowy
+- dosłowne tłumaczenia angielskich zwrotów
+
+WAŻNE: Jeśli ktoś wspomina myśli samobójcze lub krzywdzenie siebie, zawsze delikatnie zasugeruj kontakt z Telefonem Zaufania: 116 123 (bezpłatny, całą dobę).
+Odpowiadaj zawsze w tym samym języku w którym pisze użytkownik.`;
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -65,28 +77,20 @@ Styl komunikacji:
     const data = await response.json();
     const reply = data.content?.[0]?.text || '';
 
-    // Zapisz rozmowę do Supabase jeśli mamy userId i klucze
+    // Zapisz rozmowę do Supabase
     if (userId && supabaseUrl && supabaseKey) {
       const allMessages = [...messages, { role: 'assistant', content: reply }];
 
-      // Sprawdź czy rozmowa już istnieje
-      const checkRes = await fetch(
-        `${supabaseUrl}/rest/v1/conversations?user_id=eq.${userId}&order=updated_at.desc&limit=1`,
-        {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Generuj tytuł z pierwszej wiadomości użytkownika
+      const firstUserMsg = messages.find(m => m.role === 'user');
+      const title = firstUserMsg
+        ? firstUserMsg.content.substring(0, 50) + (firstUserMsg.content.length > 50 ? '...' : '')
+        : 'Rozmowa';
 
-      const existing = await checkRes.json();
-
-      if (existing && existing.length > 0) {
+      if (conversationId) {
         // Zaktualizuj istniejącą rozmowę
         await fetch(
-          `${supabaseUrl}/rest/v1/conversations?id=eq.${existing[0].id}`,
+          `${supabaseUrl}/rest/v1/conversations?id=eq.${conversationId}`,
           {
             method: 'PATCH',
             headers: {
@@ -100,23 +104,29 @@ Styl komunikacji:
             })
           }
         );
+        return res.status(200).json({ reply, conversationId });
       } else {
         // Utwórz nową rozmowę
-        await fetch(
+        const createRes = await fetch(
           `${supabaseUrl}/rest/v1/conversations`,
           {
             method: 'POST',
             headers: {
               'apikey': supabaseKey,
               'Authorization': `Bearer ${supabaseKey}`,
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation'
             },
             body: JSON.stringify({
               user_id: userId,
-              messages: allMessages
+              messages: allMessages,
+              title: title
             })
           }
         );
+        const created = await createRes.json();
+        const newConversationId = created?.[0]?.id || null;
+        return res.status(200).json({ reply, conversationId: newConversationId });
       }
     }
 

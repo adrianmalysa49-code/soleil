@@ -26,6 +26,7 @@
     --bg: #fdf6ee; --accent: #e8845a; --accent2: #f2b48a;
     --accent3: #7dbdb5; --text: #3a2e28; --muted: #9e8e83;
     --shadow: rgba(180, 120, 80, 0.13);
+    --premium: #8b5cf6; --premium2: #a78bfa;
   }
   html, body { height: 100%; height: -webkit-fill-available; font-family: 'Lato', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
   body::before {
@@ -37,10 +38,9 @@
   .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
   .particle { position: absolute; border-radius: 50%; opacity: 0.18; animation: floatUp linear infinite; }
   @keyframes floatUp { 0% { transform: translateY(110vh); opacity: 0; } 10% { opacity: 0.18; } 90% { opacity: 0.18; } 100% { transform: translateY(-10vh); opacity: 0; } }
-
   .app { position: relative; z-index: 1; height: 100vh; height: -webkit-fill-available; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; padding: 0 14px; padding-bottom: env(safe-area-inset-bottom); }
 
-  /* ═══ HEADER ═══ */
+  /* HEADER */
   header { padding: 12px 0 10px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; min-height: 60px; }
   .back-btn { width: 32px; height: 32px; border-radius: 50%; background: white; border: 1.5px solid rgba(232,132,90,0.25); display: none; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s ease; color: var(--accent); font-size: 1rem; }
   .back-btn:hover { background: var(--accent); color: white; }
@@ -51,32 +51,27 @@
   .header-text p { font-size: 0.7rem; color: var(--muted); font-weight: 300; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .status-dot { width: 6px; height: 6px; background: #5dbf8a; border-radius: 50%; display: inline-block; margin-right: 3px; animation: blink 2s ease-in-out infinite; }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
   .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
-  /* Streak */
   #streakBadge { display: none; background: linear-gradient(135deg,#ff6b35,#f7c59f); color: white; padding: 4px 9px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 8px rgba(255,107,53,0.3); white-space: nowrap; }
 
-  /* Icon buttons */
+  /* Premium badge */
+  #premiumBadge { display: none; background: linear-gradient(135deg, var(--premium), var(--premium2)); color: white; padding: 4px 9px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 8px rgba(139,92,246,0.3); white-space: nowrap; }
+
   .header-icon-btn { width: 32px; height: 32px; border-radius: 50%; background: white; border: 1.5px solid rgba(232,132,90,0.25); display: none; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s ease; font-size: 0.9rem; color: var(--accent); }
   .header-icon-btn:hover { background: var(--accent); color: white; }
   .header-icon-btn.visible { display: flex; }
-
-  /* Mój tydzień — tylko ikona na mobile */
   .week-btn { background: white; border: 1.5px solid rgba(232,132,90,0.25); color: var(--accent); padding: 0; width: 32px; height: 32px; border-radius: 50%; font-size: 0.9rem; font-family: 'Lato', sans-serif; cursor: pointer; transition: all 0.22s ease; box-shadow: 0 2px 8px var(--shadow); display: none; align-items: center; justify-content: center; flex-shrink: 0; }
   .week-btn:hover { background: var(--accent); color: white; }
   .week-btn.visible { display: flex; }
-  @media (min-width: 500px) {
-    .week-btn { width: auto; height: auto; border-radius: 20px; padding: 6px 12px; font-size: 0.78rem; }
-  }
-
   .auth-btn { background: white; border: 1.5px solid rgba(232,132,90,0.25); color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 0.78rem; font-family: 'Lato', sans-serif; cursor: pointer; transition: all 0.22s ease; box-shadow: 0 2px 8px var(--shadow); white-space: nowrap; flex-shrink: 0; }
   .auth-btn:hover { background: var(--accent); color: white; }
   .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent3), #5dbfb7); display: none; align-items: center; justify-content: center; font-size: 0.75rem; color: white; font-weight: 700; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s ease; }
   .user-avatar:hover { transform: scale(1.08); }
   .user-avatar.visible { display: flex; }
+  .user-avatar.premium { background: linear-gradient(135deg, var(--premium), var(--premium2)); box-shadow: 0 2px 8px rgba(139,92,246,0.3); }
 
-  /* ═══ OVERLAYE ═══ */
+  /* OVERLAYE */
   .overlay { display: none; position: fixed; inset: 0; background: rgba(58,46,40,0.5); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
   .overlay.visible { display: flex; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -88,8 +83,26 @@
   .popup-btn { width: 100%; padding: 11px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; border: none; font-family: 'Lato', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.22s ease; box-shadow: 0 4px 16px rgba(232,132,90,0.3); }
   .popup-btn:hover { transform: translateY(-1px); }
   .popup-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .popup-btn.premium-btn { background: linear-gradient(135deg, var(--premium), var(--premium2)); box-shadow: 0 4px 16px rgba(139,92,246,0.3); }
 
-  /* Lista rozmów */
+  /* PREMIUM POPUP */
+  .premium-popup { background: var(--bg); border-radius: 20px; padding: 28px 22px; width: 92%; max-width: 420px; box-shadow: 0 20px 60px rgba(58,46,40,0.2); animation: slideUp 0.3s ease; position: relative; }
+  .premium-header { text-align: center; margin-bottom: 22px; }
+  .premium-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+  .premium-header h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; background: linear-gradient(135deg, var(--premium), var(--premium2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .premium-header p { color: var(--muted); font-size: 0.84rem; margin-top: 4px; }
+  .premium-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+  .premium-feature { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: white; border-radius: 12px; border: 1px solid rgba(139,92,246,0.12); }
+  .feature-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+  .feature-text { flex: 1; }
+  .feature-title { font-size: 0.86rem; font-weight: 700; color: var(--text); }
+  .feature-desc { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+  .premium-price { text-align: center; margin-bottom: 18px; }
+  .price-amount { font-size: 2rem; font-weight: 700; color: var(--premium); font-family: 'Playfair Display', serif; }
+  .price-period { font-size: 0.82rem; color: var(--muted); }
+  .premium-divider { height: 1px; background: rgba(139,92,246,0.12); margin-bottom: 18px; }
+
+  /* Rozmowy */
   .conversations-popup { background: var(--bg); border-radius: 20px; padding: 20px; width: 92%; max-width: 460px; max-height: 85vh; box-shadow: 0 20px 60px rgba(58,46,40,0.2); animation: slideUp 0.3s ease; position: relative; display: flex; flex-direction: column; }
   .conversations-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-right: 24px; }
   .conversations-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--accent); }
@@ -106,10 +119,10 @@
   .conv-title { font-size: 0.86rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .conv-date { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
   .conv-delete { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 6px; border-radius: 6px; transition: all 0.15s; flex-shrink: 0; }
-  .conv-delete:hover { color: #e05a5a; background: rgba(224,90,90,0.08); }
+  .conv-delete:hover { color: #e05a5a; }
   .conv-empty { text-align: center; padding: 28px 0; color: var(--muted); font-size: 0.86rem; }
 
-  /* Mood picker */
+  /* Mood */
   .mood-picker { display: flex; justify-content: space-between; margin-bottom: 18px; gap: 6px; }
   .mood-option { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease; background: white; }
   .mood-option:hover { border-color: var(--accent2); transform: translateY(-2px); }
@@ -119,7 +132,7 @@
   .mood-note { width: 100%; border: 1.5px solid rgba(232,132,90,0.2); border-radius: 10px; padding: 9px 12px; font-family: 'Lato', sans-serif; font-size: 0.86rem; color: var(--text); background: white; resize: none; outline: none; margin-bottom: 14px; }
   .mood-note:focus { border-color: var(--accent2); }
 
-  /* Podsumowanie */
+  /* Summary */
   .summary-content { background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
   .summary-stats { display: flex; gap: 10px; margin-bottom: 12px; }
   .stat-box { flex: 1; background: rgba(232,132,90,0.06); border-radius: 8px; padding: 8px; text-align: center; }
@@ -127,8 +140,8 @@
   .stat-label { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
   .summary-text { font-size: 0.86rem; color: var(--text); line-height: 1.6; }
 
-  /* Menu użytkownika */
-  .user-menu { display: none; position: fixed; top: 64px; right: 14px; background: white; border-radius: 14px; padding: 8px; box-shadow: 0 8px 32px var(--shadow); border: 1px solid rgba(232,132,90,0.12); z-index: 200; min-width: 190px; animation: slideUp 0.2s ease; }
+  /* User menu */
+  .user-menu { display: none; position: fixed; top: 64px; right: 14px; background: white; border-radius: 14px; padding: 8px; box-shadow: 0 8px 32px var(--shadow); border: 1px solid rgba(232,132,90,0.12); z-index: 200; min-width: 200px; animation: slideUp 0.2s ease; }
   .user-menu.visible { display: block; }
   .user-menu-header { padding: 8px 10px 10px; border-bottom: 1px solid rgba(232,132,90,0.1); margin-bottom: 4px; }
   .user-menu-name { font-weight: 700; font-size: 0.86rem; color: var(--text); }
@@ -136,8 +149,9 @@
   .user-menu-btn { width: 100%; text-align: left; background: none; border: none; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem; color: var(--text); cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.15s; }
   .user-menu-btn:hover { background: rgba(232,132,90,0.08); }
   .user-menu-btn.danger { color: #e05a5a; }
+  .user-menu-btn.premium-menu { color: var(--premium); font-weight: 700; }
 
-  /* ═══ CHAT ═══ */
+  /* Chat */
   .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 8px 2px 14px; scroll-behavior: smooth; }
   .chat-window::-webkit-scrollbar { width: 4px; }
   .chat-window::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
@@ -164,7 +178,12 @@
   .typing-dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes typingBounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.5; } 40% { transform: translateY(-6px); opacity: 1; } }
 
-  /* Input */
+  /* Limit banner */
+  .limit-banner { background: linear-gradient(135deg, var(--premium), var(--premium2)); color: white; padding: 12px 16px; border-radius: 14px; margin: 8px 0; text-align: center; }
+  .limit-banner p { font-size: 0.84rem; margin-bottom: 10px; line-height: 1.4; }
+  .limit-banner button { background: white; color: var(--premium); border: none; padding: 8px 18px; border-radius: 10px; font-family: 'Lato', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .limit-banner button:hover { transform: scale(1.03); }
+
   .input-area { padding: 10px 0 16px; flex-shrink: 0; }
   .input-wrapper { display: flex; align-items: flex-end; gap: 8px; background: white; border-radius: 24px; padding: 9px 9px 9px 18px; box-shadow: 0 4px 24px var(--shadow); border: 1.5px solid rgba(232,132,90,0.18); transition: border-color 0.2s; }
   .input-wrapper:focus-within { border-color: var(--accent2); }
@@ -235,12 +254,61 @@
   </div>
 </div>
 
+<!-- Popup Premium -->
+<div class="overlay" id="premiumOverlay">
+  <div class="premium-popup">
+    <button class="popup-close" onclick="closePremium()">✕</button>
+    <div class="premium-header">
+      <span class="premium-icon">✨</span>
+      <h2>Soleil Premium</h2>
+      <p>Głębsza analiza, prawdziwa relacja, bez ograniczeń</p>
+    </div>
+    <div class="premium-features">
+      <div class="premium-feature">
+        <span class="feature-icon">🧠</span>
+        <div class="feature-text">
+          <div class="feature-title">Analiza wzorców emocjonalnych</div>
+          <div class="feature-desc">Soleil identyfikuje Twoje powtarzające się wzorce i pomaga je zrozumieć</div>
+        </div>
+      </div>
+      <div class="premium-feature">
+        <span class="feature-icon">💬</span>
+        <div class="feature-text">
+          <div class="feature-title">Nielimitowane rozmowy</div>
+          <div class="feature-desc">Rozmawiaj bez ograniczeń — Soleil jest zawsze do dyspozycji</div>
+        </div>
+      </div>
+      <div class="premium-feature">
+        <span class="feature-icon">🔗</span>
+        <div class="feature-text">
+          <div class="feature-title">Głębsza relacja z AI</div>
+          <div class="feature-desc">Bardziej osobiste, wnikliwe i szczere odpowiedzi</div>
+        </div>
+      </div>
+      <div class="premium-feature">
+        <span class="feature-icon">🚀</span>
+        <div class="feature-text">
+          <div class="feature-title">Claude Sonnet (mocniejszy model)</div>
+          <div class="feature-desc">Jeszcze głębsze rozumienie i bardziej trafne spostrzeżenia</div>
+        </div>
+      </div>
+    </div>
+    <div class="premium-divider"></div>
+    <div class="premium-price">
+      <span class="price-amount">19,99 zł</span>
+      <span class="price-period"> / miesiąc</span>
+    </div>
+    <button class="popup-btn premium-btn" onclick="startCheckout()">✨ Przejdź na Premium</button>
+  </div>
+</div>
+
 <!-- Menu użytkownika -->
 <div class="user-menu" id="userMenu">
   <div class="user-menu-header">
     <div class="user-menu-name" id="userName">—</div>
     <div class="user-menu-email" id="userEmail">—</div>
   </div>
+  <button class="user-menu-btn premium-menu" id="premiumMenuBtn" onclick="openPremium()" style="display:none">✨ Przejdź na Premium</button>
   <button class="user-menu-btn danger" onclick="signOut()">🚪 Wyloguj się</button>
 </div>
 
@@ -248,13 +316,14 @@
   <header>
     <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
     <div class="logo-circle">
-      <img src="logosoleil.png" style="width:90px;height:90px;object-fit:contain;">
+      <img src="logosoleil.png" style="width:40px;height:40px;object-fit:contain;">
     </div>
     <div class="header-text">
       <h1>Soleil</h1>
-      <p><span class="status-dot"></span>Twój przyjaciel</p>
+      <p><span class="status-dot"></span>Zawsze tutaj dla Ciebie</p>
     </div>
     <div class="header-actions">
+      <span id="premiumBadge">✨ Premium</span>
       <span id="streakBadge"></span>
       <button class="header-icon-btn" id="conversationsBtn" onclick="openConversations()" title="Rozmowy">💬</button>
       <button class="week-btn" id="weekBtn" onclick="openSummary()" title="Mój tydzień">📊</button>
@@ -279,7 +348,7 @@
 
   <div class="input-area">
     <div class="input-wrapper">
-      <textarea id="userInput" placeholder="Napisz mi o swoim dniu, jak się teraz czujesz?" rows="1"></textarea>
+      <textarea id="userInput" placeholder="Powiedz mi jak się czujesz-pokażę ci coś o Tobie" rows="1"></textarea>
       <button class="send-btn" onclick="sendMessage()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -290,32 +359,23 @@
 
 <script>
 const CLERK_PUBLISHABLE_KEY = 'pk_test_YXdhaXRlZC1taW5rLTQ1LmNsZXJrLmFjY291bnRzLmRldiQ';
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51TFXSPFK4dMhcw4pqKEAIbqYFnnSGu3Z8Sc835qtCsx3rnmgjtYQ35BGYu3rlKqTvohkz8H5loerPTKyqmrAC5Mj00lHqEufbV';
 let clerk = null;
 let currentUser = null;
 let selectedMood = null;
 let currentConversationId = null;
+let userIsPremium = false;
 
-// ═══ HISTORY API — obsługa przycisku wstecz telefonu ═══
-function pushOverlayState(id) {
-  history.pushState({ overlay: id }, '');
-}
-window.addEventListener('popstate', (e) => {
-  // Zamknij wszystkie otwarte overlaye po naciśnięciu przycisku wstecz
-  const overlays = ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay'];
-  let closed = false;
-  overlays.forEach(id => {
-    if (document.getElementById(id).classList.contains('visible')) {
-      document.getElementById(id).classList.remove('visible');
-      closed = true;
-    }
+// History API
+function pushOverlayState(id) { history.pushState({ overlay: id }, ''); }
+window.addEventListener('popstate', () => {
+  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
   });
-  if (document.getElementById('userMenu').classList.contains('visible')) {
-    document.getElementById('userMenu').classList.remove('visible');
-    closed = true;
-  }
+  document.getElementById('userMenu').classList.remove('visible');
 });
 
-// ═══ CLERK ═══
+// CLERK
 async function initClerk() {
   try {
     clerk = window.Clerk;
@@ -323,11 +383,47 @@ async function initClerk() {
     clerk.addListener(({ user }) => {
       currentUser = user;
       updateAuthUI(user);
-      if (user) { closeAuth(); checkDailyMood(); }
+      if (user) { closeAuth(); checkDailyMood(); loadSubscription(user.id); }
     });
     updateAuthUI(clerk.user);
-    if (clerk.user) checkDailyMood();
+    if (clerk.user) { checkDailyMood(); loadSubscription(clerk.user.id); }
+
+    // Sprawdź czy wrócił po płatności
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('premium') === 'success') {
+      history.replaceState({}, '', '/');
+      setTimeout(() => showSuccessMessage(), 1000);
+    }
   } catch (err) { console.error('Clerk error:', err); }
+}
+
+async function loadSubscription(userId) {
+  try {
+    const res = await fetch(`/api/subscription?userId=${userId}`);
+    const data = await res.json();
+    userIsPremium = data.isPremium || false;
+    updatePremiumUI();
+  } catch (err) { console.error(err); }
+}
+
+function updatePremiumUI() {
+  const premiumBadge = document.getElementById('premiumBadge');
+  const premiumMenuBtn = document.getElementById('premiumMenuBtn');
+  const userAvatar = document.getElementById('userAvatar');
+  if (userIsPremium) {
+    premiumBadge.style.display = 'block';
+    premiumMenuBtn.style.display = 'none';
+    userAvatar.classList.add('premium');
+  } else {
+    premiumBadge.style.display = 'none';
+    premiumMenuBtn.style.display = 'block';
+    userAvatar.classList.remove('premium');
+  }
+}
+
+function showSuccessMessage() {
+  appendMessage('ai', '✨ Witaj w Soleil Premium! Twoje konto zostało aktywowane. Cieszę się że tu jesteś — teraz mogę Cię poznać jeszcze głębiej. Powiedz mi, jak się teraz czujesz?');
+  loadSubscription(currentUser.id);
 }
 
 function updateAuthUI(user) {
@@ -352,55 +448,54 @@ function updateAuthUI(user) {
     weekBtn.classList.remove('visible');
     convBtn.classList.remove('visible');
     badge.style.display = 'none';
+    document.getElementById('premiumBadge').style.display = 'none';
   }
 }
 
-function openAuth() {
-  pushOverlayState('authOverlay');
-  document.getElementById('authOverlay').classList.add('visible');
-  if (clerk) clerk.mountSignIn(document.getElementById('clerk-sign-in'), {
-    routing: 'virtual',
-    appearance: { variables: { colorPrimary: '#e8845a', colorBackground: '#fdf6ee', borderRadius: '12px', fontFamily: 'Lato, sans-serif' } }
-  });
-}
-function closeAuth() {
-  document.getElementById('authOverlay').classList.remove('visible');
-  if (clerk) clerk.unmountSignIn(document.getElementById('clerk-sign-in'));
-}
-function toggleUserMenu() {
-  const menu = document.getElementById('userMenu');
-  if (!menu.classList.contains('visible')) pushOverlayState('userMenu');
-  menu.classList.toggle('visible');
-}
-async function signOut() {
-  if (clerk) { await clerk.signOut(); document.getElementById('userMenu').classList.remove('visible'); }
+function openAuth() { pushOverlayState('authOverlay'); document.getElementById('authOverlay').classList.add('visible'); if (clerk) clerk.mountSignIn(document.getElementById('clerk-sign-in'), { routing: 'virtual', appearance: { variables: { colorPrimary: '#e8845a', colorBackground: '#fdf6ee', borderRadius: '12px', fontFamily: 'Lato, sans-serif' } } }); }
+function closeAuth() { document.getElementById('authOverlay').classList.remove('visible'); if (clerk) clerk.unmountSignIn(document.getElementById('clerk-sign-in')); }
+function toggleUserMenu() { const menu = document.getElementById('userMenu'); if (!menu.classList.contains('visible')) pushOverlayState('userMenu'); menu.classList.toggle('visible'); }
+async function signOut() { if (clerk) { await clerk.signOut(); document.getElementById('userMenu').classList.remove('visible'); userIsPremium = false; } }
+
+// PREMIUM
+function openPremium() { pushOverlayState('premiumOverlay'); document.getElementById('premiumOverlay').classList.add('visible'); document.getElementById('userMenu').classList.remove('visible'); }
+function closePremium() { document.getElementById('premiumOverlay').classList.remove('visible'); }
+
+async function startCheckout() {
+  if (!currentUser) { openAuth(); return; }
+  const btn = document.querySelector('.premium-btn');
+  btn.textContent = 'Przekierowuję...'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id, userEmail: currentUser.emailAddresses?.[0]?.emailAddress })
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else { btn.textContent = '✨ Przejdź na Premium'; btn.disabled = false; }
+  } catch (err) { btn.textContent = '✨ Przejdź na Premium'; btn.disabled = false; }
 }
 
-// ═══ STREAK ═══
+// STREAK
 async function loadStreak(userId) {
   try {
     const res = await fetch(`/api/streak?userId=${userId}`);
     const data = await res.json();
     const badge = document.getElementById('streakBadge');
-    if (data.streak > 0) {
-      badge.textContent = `🔥 ${data.streak}`;
-      badge.style.display = 'block';
-    } else { badge.style.display = 'none'; }
+    if (data.streak > 0) { badge.textContent = `🔥 ${data.streak}`; badge.style.display = 'block'; }
+    else { badge.style.display = 'none'; }
   } catch (err) { console.error(err); }
 }
 
-// ═══ NASTRÓJ ═══
+// NASTRÓJ
 function checkDailyMood() {
   const key = `soleil_last_mood_date_${currentUser.id}`;
   const lastMood = localStorage.getItem(key);
   const today = new Date().toDateString();
   if (lastMood !== today) setTimeout(() => { pushOverlayState('moodOverlay'); document.getElementById('moodOverlay').classList.add('visible'); }, 1000);
 }
-function selectMood(value) {
-  selectedMood = value;
-  document.querySelectorAll('.mood-option').forEach((el, i) => el.classList.toggle('selected', i + 1 === value));
-  document.getElementById('saveMoodBtn').disabled = false;
-}
+function selectMood(value) { selectedMood = value; document.querySelectorAll('.mood-option').forEach((el, i) => el.classList.toggle('selected', i + 1 === value)); document.getElementById('saveMoodBtn').disabled = false; }
 function closeMood() { document.getElementById('moodOverlay').classList.remove('visible'); }
 async function saveMood() {
   if (!selectedMood || !currentUser) return;
@@ -418,7 +513,7 @@ async function saveMood() {
   } catch (err) { btn.disabled = false; btn.textContent = 'Zapisz nastrój'; }
 }
 
-// ═══ PODSUMOWANIE ═══
+// PODSUMOWANIE
 async function openSummary() {
   pushOverlayState('summaryOverlay');
   document.getElementById('summaryOverlay').classList.add('visible');
@@ -433,12 +528,8 @@ async function openSummary() {
 }
 function closeSummary() { document.getElementById('summaryOverlay').classList.remove('visible'); }
 
-// ═══ LISTA ROZMÓW ═══
-async function openConversations() {
-  pushOverlayState('conversationsOverlay');
-  document.getElementById('conversationsOverlay').classList.add('visible');
-  await loadConversationsList();
-}
+// ROZMOWY
+async function openConversations() { pushOverlayState('conversationsOverlay'); document.getElementById('conversationsOverlay').classList.add('visible'); await loadConversationsList(); }
 function closeConversations() { document.getElementById('conversationsOverlay').classList.remove('visible'); }
 
 async function loadConversationsList() {
@@ -447,19 +538,12 @@ async function loadConversationsList() {
   try {
     const res = await fetch(`/api/history?userId=${currentUser.id}`);
     const data = await res.json();
-    if (!data.conversations || data.conversations.length === 0) {
-      list.innerHTML = '<div class="conv-empty">Nie masz jeszcze żadnych rozmów 🌸</div>';
-      return;
-    }
+    if (!data.conversations || data.conversations.length === 0) { list.innerHTML = '<div class="conv-empty">Nie masz jeszcze żadnych rozmów 🌸</div>'; return; }
     list.innerHTML = data.conversations.map(conv => {
       const date = new Date(conv.updatedAt).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
-      const isActive = conv.id === currentConversationId;
-      return `<div class="conv-item ${isActive ? 'active' : ''}" onclick="loadConversation('${conv.id}')">
+      return `<div class="conv-item ${conv.id === currentConversationId ? 'active' : ''}" onclick="loadConversation('${conv.id}')">
         <div class="conv-icon">💬</div>
-        <div class="conv-info">
-          <div class="conv-title">${conv.title}</div>
-          <div class="conv-date">${date}</div>
-        </div>
+        <div class="conv-info"><div class="conv-title">${conv.title}</div><div class="conv-date">${date}</div></div>
         <button class="conv-delete" onclick="deleteConversation(event, '${conv.id}')">🗑️</button>
       </div>`;
     }).join('');
@@ -472,14 +556,10 @@ async function loadConversation(conversationId) {
     const data = await res.json();
     if (!data.messages || data.messages.length === 0) return;
     chatWindow.querySelectorAll('.message-row').forEach(m => m.remove());
-    welcomeMsg.style.display = 'none';
-    backBtn.classList.add('visible');
-    firstMessage = false;
-    currentConversationId = conversationId;
-    conversationHistory = data.messages;
+    welcomeMsg.style.display = 'none'; backBtn.classList.add('visible');
+    firstMessage = false; currentConversationId = conversationId; conversationHistory = data.messages;
     data.messages.forEach(msg => appendMessageSilent(msg.role === 'assistant' ? 'ai' : 'user', msg.content));
-    closeConversations();
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+    closeConversations(); chatWindow.scrollTop = chatWindow.scrollHeight;
   } catch (err) { console.error(err); }
 }
 
@@ -495,21 +575,14 @@ async function deleteConversation(event, conversationId) {
 
 function startNewChat() {
   chatWindow.querySelectorAll('.message-row').forEach(m => m.remove());
-  welcomeMsg.style.display = 'block';
-  backBtn.classList.remove('visible');
-  conversationHistory = [];
-  currentConversationId = null;
-  firstMessage = true;
-  input.value = '';
-  input.style.height = 'auto';
-  closeConversations();
+  welcomeMsg.style.display = 'block'; backBtn.classList.remove('visible');
+  conversationHistory = []; currentConversationId = null; firstMessage = true;
+  input.value = ''; input.style.height = 'auto'; closeConversations();
 }
 
-// Zamknij overlaye po kliknięciu tła
-['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay'].forEach(id => {
-  document.getElementById(id).addEventListener('click', (e) => {
-    if (e.target.id === id) document.getElementById(id).classList.remove('visible');
-  });
+// Zamknij po kliknięciu tła
+['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', (e) => { if (e.target.id === id) document.getElementById(id).classList.remove('visible'); });
 });
 document.addEventListener('click', (e) => {
   const menu = document.getElementById('userMenu');
@@ -517,24 +590,21 @@ document.addEventListener('click', (e) => {
   if (!menu.contains(e.target) && !avatar.contains(e.target)) menu.classList.remove('visible');
 });
 
-// ═══ PARTICLES ═══
+// PARTICLES
 (function() {
   const container = document.getElementById('particles');
   const colors = ['#e8845a','#f2b48a','#7dbdb5','#ffd6b0','#b5e0dc'];
   for (let i = 0; i < 18; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
+    const p = document.createElement('div'); p.className = 'particle';
     const size = 6 + Math.random() * 20;
     p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${12+Math.random()*18}s;animation-delay:${-Math.random()*20}s;`;
     container.appendChild(p);
   }
 })();
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
 
-// ═══ CHAT ═══
+// CHAT
 const input = document.getElementById('userInput');
 const chatWindow = document.getElementById('chatWindow');
 const welcomeMsg = document.getElementById('welcomeMsg');
@@ -547,53 +617,33 @@ input.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shif
 
 function goBack() {
   chatWindow.querySelectorAll('.message-row').forEach(m => m.remove());
-  welcomeMsg.style.display = 'block';
-  backBtn.classList.remove('visible');
-  conversationHistory = [];
-  currentConversationId = null;
-  firstMessage = true;
-  input.value = '';
-  input.style.height = 'auto';
+  welcomeMsg.style.display = 'block'; backBtn.classList.remove('visible');
+  conversationHistory = []; currentConversationId = null; firstMessage = true;
+  input.value = ''; input.style.height = 'auto';
 }
 
 function appendMessage(role, text) {
   if (firstMessage) { welcomeMsg.style.display = 'none'; backBtn.classList.add('visible'); firstMessage = false; }
-  const row = document.createElement('div');
-  row.className = `message-row ${role}`;
-  const avatar = document.createElement('div');
-  avatar.className = `avatar ${role}`;
-  avatar.textContent = role === 'ai' ? '☀️' : '🙂';
-  const bubble = document.createElement('div');
-  bubble.className = `bubble ${role}`;
-  bubble.innerHTML = text.replace(/\n/g, '<br>');
-  row.appendChild(avatar); row.appendChild(bubble);
-  chatWindow.appendChild(row);
+  const row = document.createElement('div'); row.className = `message-row ${role}`;
+  const avatar = document.createElement('div'); avatar.className = `avatar ${role}`; avatar.textContent = role === 'ai' ? '☀️' : '🙂';
+  const bubble = document.createElement('div'); bubble.className = `bubble ${role}`; bubble.innerHTML = text.replace(/\n/g, '<br>');
+  row.appendChild(avatar); row.appendChild(bubble); chatWindow.appendChild(row);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 function appendMessageSilent(role, text) {
-  const row = document.createElement('div');
-  row.className = `message-row ${role}`;
-  const avatar = document.createElement('div');
-  avatar.className = `avatar ${role}`;
-  avatar.textContent = role === 'ai' ? '☀️' : '🙂';
-  const bubble = document.createElement('div');
-  bubble.className = `bubble ${role}`;
-  bubble.innerHTML = text.replace(/\n/g, '<br>');
-  row.appendChild(avatar); row.appendChild(bubble);
-  chatWindow.appendChild(row);
+  const row = document.createElement('div'); row.className = `message-row ${role}`;
+  const avatar = document.createElement('div'); avatar.className = `avatar ${role}`; avatar.textContent = role === 'ai' ? '☀️' : '🙂';
+  const bubble = document.createElement('div'); bubble.className = `bubble ${role}`; bubble.innerHTML = text.replace(/\n/g, '<br>');
+  row.appendChild(avatar); row.appendChild(bubble); chatWindow.appendChild(row);
 }
 
 function showTyping() {
-  const row = document.createElement('div');
-  row.className = 'message-row ai'; row.id = 'typingRow';
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar ai'; avatar.textContent = '☀️';
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble ai typing-indicator';
+  const row = document.createElement('div'); row.className = 'message-row ai'; row.id = 'typingRow';
+  const avatar = document.createElement('div'); avatar.className = 'avatar ai'; avatar.textContent = '☀️';
+  const bubble = document.createElement('div'); bubble.className = 'bubble ai typing-indicator';
   bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-  row.appendChild(avatar); row.appendChild(bubble);
-  chatWindow.appendChild(row);
+  row.appendChild(avatar); row.appendChild(bubble); chatWindow.appendChild(row);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 function removeTyping() { const t = document.getElementById('typingRow'); if (t) t.remove(); }
@@ -614,6 +664,18 @@ async function sendMessage() {
     });
     const data = await res.json();
     removeTyping();
+
+    // Obsłuż limit wiadomości
+    if (res.status === 429 && data.error === 'limit') {
+      const banner = document.createElement('div');
+      banner.className = 'limit-banner';
+      banner.innerHTML = `<p>${data.message}</p><button onclick="openPremium()">✨ Zobacz Premium</button>`;
+      chatWindow.appendChild(banner);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      conversationHistory.pop();
+      return;
+    }
+
     if (!res.ok) { appendMessage('ai', 'Przepraszam, wystąpił błąd. 🌸'); return; }
     if (data.conversationId) currentConversationId = data.conversationId;
     const reply = data.reply || 'Przepraszam, spróbuj jeszcze raz. 🌸';

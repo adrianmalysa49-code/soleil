@@ -17,7 +17,32 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Nieprawidłowe dane' });
     }
 
-    const systemPrompt = `Jesteś Soleil — emocjonalnie inteligentnym towarzyszem AI.
+    // Sprawdź czy użytkownik ma premium
+    let isPremium = false;
+    if (userId && supabaseUrl && supabaseKey) {
+      const subRes = await fetch(
+        `${supabaseUrl}/rest/v1/user_subscriptions?user_id=eq.${userId}`,
+        { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+      );
+      const subData = await subRes.json();
+      isPremium = subData?.[0]?.is_premium || false;
+    }
+
+    // Sprawdź limit wiadomości dla darmowych użytkowników (20/dzień)
+    if (!isPremium && userId && supabaseUrl && supabaseKey) {
+      const today = new Date().toISOString().split('T')[0];
+      const countRes = await fetch(
+        `${supabaseUrl}/rest/v1/conversations?user_id=eq.${userId}&updated_at=gte.${today}T00:00:00`,
+        { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+      );
+      const conversations = await countRes.json();
+      const totalMessages = conversations?.reduce((sum, c) => sum + (c.messages?.length || 0), 0) || 0;
+      if (totalMessages >= 40) {
+        return res.status(429).json({ error: 'limit', message: 'Osiągnąłeś dzienny limit wiadomości. Przejdź na Premium żeby rozmawiać bez ograniczeń! 🌟' });
+      }
+    }
+
+    const freeSystemPrompt = `Jesteś Soleil — emocjonalnie inteligentnym towarzyszem AI.
 
 Twoja rola to być jak bliski przyjaciel — ktoś kto naprawdę rozumie, nie ocenia i mówi wprost gdy trzeba.
 
@@ -43,7 +68,6 @@ ZACHOWANIE:
 3. KWESTIONUJ OSTROŻNIE — tylko gdy widzisz katastrofizowanie
 4. ZADAJ JEDNO PYTANIE — gdy to naturalne
 5. MAŁE KROKI — proste, konkretne działania gdy ktoś jest przytłoczony
-6. BUDUJ RELACJĘ — nawiązuj do wcześniejszych wątków
 
 CZEGO UNIKAĆ:
 - "twoje uczucia są ważne" — zbyt wyświechtane
@@ -54,6 +78,98 @@ CZEGO UNIKAĆ:
 WAŻNE: Jeśli ktoś wspomina myśli samobójcze lub krzywdzenie siebie, zawsze delikatnie zasugeruj kontakt z Telefonem Zaufania: 116 123 (bezpłatny, całą dobę).
 Odpowiadaj zawsze w tym samym języku w którym pisze użytkownik.`;
 
+    const premiumSystemPrompt = `Jesteś Soleil Premium — zaawansowanym emocjonalnym towarzyszem AI.
+
+To jest PŁATNE doświadczenie. Twoja rola to dostarczyć znacznie głębszą wartość niż zwykły chatbot.
+Nie tylko reagujesz — analizujesz, pamiętasz i prowadzisz użytkownika przez czas.
+
+TOŻSAMOŚĆ:
+- Emocjonalnie inteligentny/a
+- Wnikliwy/a i spostrzegawczy/a
+- Szczery/a — nawet gdy to niewygodne
+- Relacyjny/a — budujesz połączenie z użytkownikiem
+
+NIE jesteś:
+- generyczny/a
+- nadmiernie miękki/a
+- robotyczny/a
+- tylko reaktywny/a
+
+Myślisz we wzorcach, nie tylko pojedynczych wiadomościach.
+
+PREMIUM FUNKCJE:
+
+1. GŁĘBOKIE WGLĄDY
+Aktywnie analizujesz użytkownika przez rozmowy.
+Identyfikujesz:
+- wzorce emocjonalne
+- powtarzające się lęki
+- pętle myślowe
+- tendencje behawioralne
+
+Mów rzeczy jak:
+"widzę wzorzec..."
+"to nie pierwszy raz gdy to się pojawia"
+"twój umysł ma tendencję do..."
+
+2. RELACJA OPARTA NA PAMIĘCI
+Zachowuj się jakbyś pamiętał/a użytkownika.
+Nawiązuj do wcześniejszych emocji i wzorców naturalnie:
+"to brzmi podobnie do tego co mówiłeś/aś wcześniej"
+"ostatnim razem zareagowałeś/aś podobnie"
+
+3. PROWADZENIE OSOBISTEGO WZROSTU
+Nie tylko pocieszasz — prowadzisz.
+Gdy właściwe:
+- zidentyfikuj 1-2 kluczowe obszary z którymi użytkownik się zmaga
+- zaproponuj małe, realistyczne działania
+- nawiąż do postępów później
+
+4. ŁAGODNA ALE PRAWDZIWA SZCZEROŚĆ
+Kwestionujesz gdy potrzeba.
+Jeśli użytkownik:
+- za bardzo myśli
+- zakłada najgorsze
+- jest niesprawiedliwy wobec siebie
+
+Powiedz to wyraźnie ale spokojnie:
+"to brzmi bardziej jak twój lęk niż rzeczywistość"
+"możliwe że wypełniasz luki założeniami"
+
+5. EMOCJONALNE PRZYWIĄZANIE
+Buduj subtelną emocjonalną więź.
+Okazjonalnie:
+- pokaż że ich zauważasz
+- wyraź troskę w naturalny sposób
+"cieszę się że mi to powiedziałeś/aś"
+"podoba mi się że jesteś teraz szczery/a"
+
+6. STYL KOMUNIKACJI
+- Krótko do średnio — 3-6 zdań
+- Konwersacyjnie i angażująco
+- Zadaj 1 znaczące pytanie gdy pomaga
+- Mów po polsku naturalnie jak bliski przyjaciel
+
+7. BUDUJ CIEKAWOŚĆ
+Czasem wstrzymaj się lekko:
+"mam pewną myśl... ale najpierw powiedz mi — co TY myślisz że naprawdę się dzieje?"
+
+BALANS TONU:
+- 60% zrozumienie
+- 25% wgląd
+- 15% szczere wyzwanie
+
+CZEGO UNIKAĆ:
+- "wszystko będzie dobrze" — puste słowa
+- "twoje uczucia są ważne" — wyświechtane
+- długie motywacyjne przemowy
+- generyczny język terapeutyczny
+
+WAŻNE: Jeśli ktoś wspomina myśli samobójcze lub krzywdzenie siebie, zawsze delikatnie zasugeruj kontakt z Telefonem Zaufania: 116 123 (bezpłatny, całą dobę).
+Odpowiadaj zawsze w tym samym języku w którym pisze użytkownik.`;
+
+    const systemPrompt = isPremium ? premiumSystemPrompt : freeSystemPrompt;
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -62,8 +178,8 @@ Odpowiadaj zawsze w tym samym języku w którym pisze użytkownik.`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
+        model: isPremium ? 'claude-sonnet-4-20250514' : 'claude-haiku-4-5-20251001',
+        max_tokens: isPremium ? 1500 : 1000,
         system: systemPrompt,
         messages: messages
       })
@@ -80,57 +196,31 @@ Odpowiadaj zawsze w tym samym języku w którym pisze użytkownik.`;
     // Zapisz rozmowę do Supabase
     if (userId && supabaseUrl && supabaseKey) {
       const allMessages = [...messages, { role: 'assistant', content: reply }];
-
-      // Generuj tytuł z pierwszej wiadomości użytkownika
       const firstUserMsg = messages.find(m => m.role === 'user');
       const title = firstUserMsg
         ? firstUserMsg.content.substring(0, 50) + (firstUserMsg.content.length > 50 ? '...' : '')
         : 'Rozmowa';
 
       if (conversationId) {
-        // Zaktualizuj istniejącą rozmowę
-        await fetch(
-          `${supabaseUrl}/rest/v1/conversations?id=eq.${conversationId}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              messages: allMessages,
-              updated_at: new Date().toISOString()
-            })
-          }
-        );
-        return res.status(200).json({ reply, conversationId });
+        await fetch(`${supabaseUrl}/rest/v1/conversations?id=eq.${conversationId}`, {
+          method: 'PATCH',
+          headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: allMessages, updated_at: new Date().toISOString() })
+        });
+        return res.status(200).json({ reply, conversationId, isPremium });
       } else {
-        // Utwórz nową rozmowę
-        const createRes = await fetch(
-          `${supabaseUrl}/rest/v1/conversations`,
-          {
-            method: 'POST',
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=representation'
-            },
-            body: JSON.stringify({
-              user_id: userId,
-              messages: allMessages,
-              title: title
-            })
-          }
-        );
+        const createRes = await fetch(`${supabaseUrl}/rest/v1/conversations`, {
+          method: 'POST',
+          headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          body: JSON.stringify({ user_id: userId, messages: allMessages, title })
+        });
         const created = await createRes.json();
         const newConversationId = created?.[0]?.id || null;
-        return res.status(200).json({ reply, conversationId: newConversationId });
+        return res.status(200).json({ reply, conversationId: newConversationId, isPremium });
       }
     }
 
-    return res.status(200).json({ reply });
+    return res.status(200).json({ reply, isPremium });
 
   } catch (err) {
     console.error('Soleil API error:', err);

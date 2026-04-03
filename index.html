@@ -377,7 +377,7 @@
 
   <div class="input-area">
     <div class="input-wrapper">
-      <textarea id="userInput" placeholder="Powiedz mi jak się czujesz - pokażę Ci coś ważnego" rows="1"></textarea>
+      <textarea id="userInput" placeholder="Napisz mi jak się czujesz - pokażę ci coś ważnego" rows="1"></textarea>
       <button class="send-btn" onclick="sendMessage()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -409,7 +409,134 @@ function setLanguage(lang) {
   currentLanguage = lang;
   localStorage.setItem('soleil_language', lang);
   updateLangUI();
+  updateInterfaceLanguage(lang);
   closeLanguage();
+}
+
+const translations = {
+  pl: {
+    tagline: 'Zawsze tutaj dla Ciebie',
+    welcomeTitle: 'Hej, jestem tu dla Ciebie',
+    welcomeText: 'Możesz mi powiedzieć wszystko — swoje troski, problemy, smutki. Pomogę Ci spojrzeć na nie z nowej perspektywy. 💛',
+    s1: '😔 Jestem smutny / a', s2: '💼 Problem w pracy / szkole', s3: '💔 Kłótnia z kimś bliskim', s4: '😰 Czuję stres',
+    placeholder: 'Napisz mi o swoim dniu...',
+    loginBtn: 'Zaloguj się',
+    weekBtn: '📊',
+    newChat: '+ Nowa',
+    signOut: '🚪 Wyloguj się',
+    premiumMenu: '✨ Przejdź na Premium',
+    authTitle: 'Witaj w Soleil ☀️',
+    authDesc: 'Zaloguj się żeby Soleil pamiętał Twoje rozmowy i nastroje.',
+    moodTitle: 'Jak się dziś czujesz? 🌸',
+    moodDesc: 'Codzienne śledzenie nastroju pomaga Soleil lepiej Cię zrozumieć.',
+    saveMood: 'Zapisz nastrój',
+    moodNote: 'Chcesz coś dodać? (opcjonalnie)',
+  },
+  en: {
+    tagline: 'Always here for you',
+    welcomeTitle: 'Hey, I\'m here for you',
+    welcomeText: 'You can tell me anything — your worries, problems, sadness. I\'ll help you see them from a new perspective. 💛',
+    s1: '😔 I\'m sad', s2: '💼 Work / school problem', s3: '💔 Argument with someone', s4: '😰 I feel stressed',
+    placeholder: 'Tell me about your day...',
+    loginBtn: 'Sign in',
+    weekBtn: '📊',
+    newChat: '+ New',
+    signOut: '🚪 Sign out',
+    premiumMenu: '✨ Go Premium',
+    authTitle: 'Welcome to Soleil ☀️',
+    authDesc: 'Sign in so Soleil can remember your conversations and moods.',
+    moodTitle: 'How are you feeling today? 🌸',
+    moodDesc: 'Daily mood tracking helps Soleil understand you better.',
+    saveMood: 'Save mood',
+    moodNote: 'Want to add something? (optional)',
+  },
+  uk: {
+    tagline: 'Завжди тут для тебе',
+    welcomeTitle: 'Привіт, я тут для тебе',
+    welcomeText: 'Ти можеш розповісти мені все — свої турботи, проблеми, смуток. Я допоможу тобі подивитися на них з нової точки зору. 💛',
+    s1: '😔 Мені сумно', s2: '💼 Проблема на роботі / в школі', s3: '💔 Сварка з близькою людиною', s4: '😰 Я відчуваю стрес',
+    placeholder: 'Розкажи мені про свій день...',
+    loginBtn: 'Увійти',
+    weekBtn: '📊',
+    newChat: '+ Новий',
+    signOut: '🚪 Вийти',
+    premiumMenu: '✨ Перейти на Premium',
+    authTitle: 'Ласкаво просимо до Soleil ☀️',
+    authDesc: 'Увійди, щоб Soleil пам\'ятав твої розмови та настрої.',
+    moodTitle: 'Як ти себе почуваєш сьогодні? 🌸',
+    moodDesc: 'Щоденне відстеження настрою допомагає Soleil краще тебе розуміти.',
+    saveMood: 'Зберегти настрій',
+    moodNote: 'Хочеш щось додати? (необов\'язково)',
+  },
+  de: {
+    tagline: 'Immer für dich da',
+    welcomeTitle: 'Hallo, ich bin für dich da',
+    welcomeText: 'Du kannst mir alles erzählen — deine Sorgen, Probleme, Traurigkeit. Ich helfe dir, sie aus einer neuen Perspektive zu sehen. 💛',
+    s1: '😔 Ich bin traurig', s2: '💼 Problem bei der Arbeit / Schule', s3: '💔 Streit mit jemandem', s4: '😰 Ich fühle mich gestresst',
+    placeholder: 'Erzähl mir von deinem Tag...',
+    loginBtn: 'Anmelden',
+    weekBtn: '📊',
+    newChat: '+ Neu',
+    signOut: '🚪 Abmelden',
+    premiumMenu: '✨ Zu Premium wechseln',
+    authTitle: 'Willkommen bei Soleil ☀️',
+    authDesc: 'Melde dich an, damit Soleil sich an deine Gespräche und Stimmungen erinnert.',
+    moodTitle: 'Wie fühlst du dich heute? 🌸',
+    moodDesc: 'Tägliches Stimmungs-Tracking hilft Soleil, dich besser zu verstehen.',
+    saveMood: 'Stimmung speichern',
+    moodNote: 'Möchtest du etwas hinzufügen? (optional)',
+  },
+  es: {
+    tagline: 'Siempre aquí para ti',
+    welcomeTitle: 'Hola, estoy aquí para ti',
+    welcomeText: 'Puedes contarme todo — tus preocupaciones, problemas, tristezas. Te ayudaré a verlos desde una nueva perspectiva. 💛',
+    s1: '😔 Estoy triste', s2: '💼 Problema en el trabajo / escuela', s3: '💔 Pelea con alguien', s4: '😰 Me siento estresado/a',
+    placeholder: 'Cuéntame sobre tu día...',
+    loginBtn: 'Iniciar sesión',
+    weekBtn: '📊',
+    newChat: '+ Nueva',
+    signOut: '🚪 Cerrar sesión',
+    premiumMenu: '✨ Ir a Premium',
+    authTitle: 'Bienvenido a Soleil ☀️',
+    authDesc: 'Inicia sesión para que Soleil recuerde tus conversaciones y estados de ánimo.',
+    moodTitle: '¿Cómo te sientes hoy? 🌸',
+    moodDesc: 'El seguimiento diario del estado de ánimo ayuda a Soleil a entenderte mejor.',
+    saveMood: 'Guardar estado de ánimo',
+    moodNote: '¿Quieres añadir algo? (opcional)',
+  }
+};
+
+function updateInterfaceLanguage(lang) {
+  const t = translations[lang] || translations.pl;
+  // Header
+  document.querySelector('.header-text p').innerHTML = `<span class="status-dot"></span>${t.tagline}`;
+  document.getElementById('loginBtn').textContent = t.loginBtn;
+  // Welcome
+  document.querySelector('.welcome h2').textContent = t.welcomeTitle;
+  document.querySelector('.welcome p').textContent = t.welcomeText;
+  // Suggestions
+  const btns = document.querySelectorAll('.suggestion-btn');
+  if (btns[0]) btns[0].textContent = t.s1;
+  if (btns[1]) btns[1].textContent = t.s2;
+  if (btns[2]) btns[2].textContent = t.s3;
+  if (btns[3]) btns[3].textContent = t.s4;
+  // Input
+  document.getElementById('userInput').placeholder = t.placeholder;
+  // New chat btn
+  document.querySelector('.new-chat-btn').textContent = t.newChat;
+  // Sign out
+  document.querySelector('.user-menu-btn.danger').textContent = t.signOut;
+  // Premium menu
+  const premBtn = document.getElementById('premiumMenuBtn');
+  if (premBtn) premBtn.textContent = t.premiumMenu;
+  // Auth popup
+  document.querySelector('#authOverlay h2').textContent = t.authTitle;
+  document.querySelector('#authOverlay p').textContent = t.authDesc;
+  // Mood popup
+  document.querySelector('#moodOverlay h2').textContent = t.moodTitle;
+  document.querySelector('#moodOverlay p').textContent = t.moodDesc;
+  document.getElementById('saveMoodBtn').textContent = t.saveMood;
+  document.getElementById('moodNote').placeholder = t.moodNote;
 }
 
 // History API
@@ -735,7 +862,7 @@ async function sendMessage() {
 
 window.__clerk_init = initClerk;
 document.querySelector('script[data-clerk-publishable-key]').onload = initClerk;
-window.addEventListener('load', () => { setTimeout(initClerk, 1000); updateLangUI(); });
+window.addEventListener('load', () => { setTimeout(initClerk, 1000); updateLangUI(); updateInterfaceLanguage(currentLanguage); });
 </script>
 </body>
 </html>

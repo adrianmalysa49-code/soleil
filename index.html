@@ -58,6 +58,19 @@
   /* Premium badge */
   #premiumBadge { display: none; background: linear-gradient(135deg, var(--premium), var(--premium2)); color: white; padding: 4px 9px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 8px rgba(139,92,246,0.3); white-space: nowrap; }
 
+  /* Language selector */
+  .lang-btn { width: 32px; height: 32px; border-radius: 50%; background: white; border: 1.5px solid rgba(232,132,90,0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s ease; font-size: 0.85rem; }
+  .lang-btn:hover { background: rgba(232,132,90,0.08); transform: scale(1.05); }
+  .lang-popup { background: var(--bg); border-radius: 20px; padding: 24px 20px; width: 92%; max-width: 340px; box-shadow: 0 20px 60px rgba(58,46,40,0.2); animation: slideUp 0.3s ease; position: relative; }
+  .lang-popup h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--accent); margin-bottom: 16px; }
+  .lang-options { display: flex; flex-direction: column; gap: 8px; }
+  .lang-option { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: white; border-radius: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: 0 2px 8px var(--shadow); }
+  .lang-option:hover { border-color: var(--accent2); transform: translateY(-1px); }
+  .lang-option.active { border-color: var(--accent); background: rgba(232,132,90,0.06); }
+  .lang-flag { font-size: 1.4rem; }
+  .lang-name { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+  .lang-native { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+
   .header-icon-btn { width: 32px; height: 32px; border-radius: 50%; background: white; border: 1.5px solid rgba(232,132,90,0.25); display: none; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s ease; font-size: 0.9rem; color: var(--accent); }
   .header-icon-btn:hover { background: var(--accent); color: white; }
   .header-icon-btn.visible { display: flex; }
@@ -302,6 +315,21 @@
   </div>
 </div>
 
+<!-- Popup języka -->
+<div class="overlay" id="languageOverlay">
+  <div class="lang-popup">
+    <button class="popup-close" onclick="closeLanguage()">✕</button>
+    <h2>🌍 Wybierz język</h2>
+    <div class="lang-options">
+      <div class="lang-option" onclick="setLanguage('pl')" id="lang-pl"><span class="lang-flag">🇵🇱</span><div><div class="lang-name">Polski</div><div class="lang-native">Polish</div></div></div>
+      <div class="lang-option" onclick="setLanguage('en')" id="lang-en"><span class="lang-flag">🇬🇧</span><div><div class="lang-name">English</div><div class="lang-native">Angielski</div></div></div>
+      <div class="lang-option" onclick="setLanguage('uk')" id="lang-uk"><span class="lang-flag">🇺🇦</span><div><div class="lang-name">Українська</div><div class="lang-native">Ukraiński</div></div></div>
+      <div class="lang-option" onclick="setLanguage('de')" id="lang-de"><span class="lang-flag">🇩🇪</span><div><div class="lang-name">Deutsch</div><div class="lang-native">Niemiecki</div></div></div>
+      <div class="lang-option" onclick="setLanguage('es')" id="lang-es"><span class="lang-flag">🇪🇸</span><div><div class="lang-name">Español</div><div class="lang-native">Hiszpański</div></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- Menu użytkownika -->
 <div class="user-menu" id="userMenu">
   <div class="user-menu-header">
@@ -316,7 +344,7 @@
   <header>
     <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
     <div class="logo-circle">
-      <img src="logosoleil.png" style="width:90px;height:90px;object-fit:contain;">
+      <img src="logosoleil.png" style="width:40px;height:40px;object-fit:contain;">
     </div>
     <div class="header-text">
       <h1>Soleil</h1>
@@ -325,6 +353,7 @@
     <div class="header-actions">
       <span id="premiumBadge">✨ Premium</span>
       <span id="streakBadge"></span>
+      <button class="lang-btn" id="langBtn" onclick="openLanguage()">🇵🇱</button>
       <button class="header-icon-btn" id="conversationsBtn" onclick="openConversations()" title="Rozmowy">💬</button>
       <button class="week-btn" id="weekBtn" onclick="openSummary()" title="Mój tydzień">📊</button>
       <button class="auth-btn" id="loginBtn" onclick="openAuth()">Zaloguj się</button>
@@ -359,12 +388,29 @@
 
 <script>
 const CLERK_PUBLISHABLE_KEY = 'pk_test_YXdhaXRlZC1taW5rLTQ1LmNsZXJrLmFjY291bnRzLmRldiQ';
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51TFXSPFK4dMhcw4pqKEAIbqYFnnSGu3Z8Sc835qtCsx3rnmgjtYQ35BGYu3rlKqTvohkz8H5loerPTKyqmrAC5Mj00lHqEufbV';
+const STRIPE_PUBLISHABLE_KEY = 'WSTAW_TUTAJ_STRIPE_PUBLISHABLE_KEY';
 let clerk = null;
 let currentUser = null;
 let selectedMood = null;
 let currentConversationId = null;
 let userIsPremium = false;
+let currentLanguage = localStorage.getItem('soleil_language') || 'pl';
+const langFlags = { pl: '🇵🇱', en: '🇬🇧', uk: '🇺🇦', de: '🇩🇪', es: '🇪🇸' };
+
+// Funkcje języka
+function openLanguage() { pushOverlayState('languageOverlay'); document.getElementById('languageOverlay').classList.add('visible'); updateLangUI(); }
+function closeLanguage() { document.getElementById('languageOverlay').classList.remove('visible'); }
+function updateLangUI() {
+  document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
+  document.getElementById(`lang-${currentLanguage}`)?.classList.add('active');
+  document.getElementById('langBtn').textContent = langFlags[currentLanguage] || '🌍';
+}
+function setLanguage(lang) {
+  currentLanguage = lang;
+  localStorage.setItem('soleil_language', lang);
+  updateLangUI();
+  closeLanguage();
+}
 
 // History API
 function pushOverlayState(id) { history.pushState({ overlay: id }, ''); }
@@ -581,7 +627,7 @@ function startNewChat() {
 }
 
 // Zamknij po kliknięciu tła
-['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay'].forEach(id => {
+['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay'].forEach(id => {
   document.getElementById(id).addEventListener('click', (e) => { if (e.target.id === id) document.getElementById(id).classList.remove('visible'); });
 });
 document.addEventListener('click', (e) => {
@@ -660,7 +706,7 @@ async function sendMessage() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: conversationHistory, userId: currentUser?.id || null, conversationId: currentConversationId })
+      body: JSON.stringify({ messages: conversationHistory, userId: currentUser?.id || null, conversationId: currentConversationId, language: currentLanguage })
     });
     const data = await res.json();
     removeTyping();
@@ -689,7 +735,7 @@ async function sendMessage() {
 
 window.__clerk_init = initClerk;
 document.querySelector('script[data-clerk-publishable-key]').onload = initClerk;
-window.addEventListener('load', () => setTimeout(initClerk, 1000));
+window.addEventListener('load', () => { setTimeout(initClerk, 1000); updateLangUI(); });
 </script>
 </body>
 </html>

@@ -367,8 +367,8 @@
       <h2>Hej, jestem tu dla Ciebie</h2>
       <p>Możesz mi powiedzieć wszystko — swoje troski, problemy, smutki. Pomogę Ci spojrzeć na nie z nowej perspektywy. 💛</p>
       <div class="suggestions">
-        <button class="suggestion-btn" onclick="sendSuggestion('Czuję się dziś bardzo smutny / a')">😔 Jestem smutny/a</button>
-        <button class="suggestion-btn" onclick="sendSuggestion('Mam problem w pracy / szkole i nie wiem co robić')">💼 Problem w pracy / szkole</button>
+        <button class="suggestion-btn" onclick="sendSuggestion('Czuję się dziś bardzo smutny/a')">😔 Jestem smutny/a</button>
+        <button class="suggestion-btn" onclick="sendSuggestion('Mam problem w pracy/szkole i nie wiem co robić')">💼 Problem w pracy/szkole</button>
         <button class="suggestion-btn" onclick="sendSuggestion('Pokłóciłem/am się z bliską osobą')">💔 Kłótnia z kimś bliskim</button>
         <button class="suggestion-btn" onclick="sendSuggestion('Jestem bardzo zestresowany/a')">😰 Czuję stres</button>
       </div>
@@ -377,7 +377,7 @@
 
   <div class="input-area">
     <div class="input-wrapper">
-      <textarea id="userInput" placeholder="Napisz mi jak się czujesz - pokażę ci coś ważnego" rows="1"></textarea>
+      <textarea id="userInput" placeholder="Napisz mi o swoim dniu..." rows="1"></textarea>
       <button class="send-btn" onclick="sendMessage()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -418,7 +418,7 @@ const translations = {
     tagline: 'Zawsze tutaj dla Ciebie',
     welcomeTitle: 'Hej, jestem tu dla Ciebie',
     welcomeText: 'Możesz mi powiedzieć wszystko — swoje troski, problemy, smutki. Pomogę Ci spojrzeć na nie z nowej perspektywy. 💛',
-    s1: '😔 Jestem smutny / a', s2: '💼 Problem w pracy / szkole', s3: '💔 Kłótnia z kimś bliskim', s4: '😰 Czuję stres',
+    s1: '😔 Jestem smutny/a', s2: '💼 Problem w pracy/szkole', s3: '💔 Kłótnia z kimś bliskim', s4: '😰 Czuję stres',
     placeholder: 'Napisz mi o swoim dniu...',
     loginBtn: 'Zaloguj się',
     weekBtn: '📊',
@@ -431,12 +431,35 @@ const translations = {
     moodDesc: 'Codzienne śledzenie nastroju pomaga Soleil lepiej Cię zrozumieć.',
     saveMood: 'Zapisz nastrój',
     moodNote: 'Chcesz coś dodać? (opcjonalnie)',
+    weekTitle: 'Twój tydzień 📊',
+    weekClose: 'Zamknij',
+    weekLoading: 'Ładowanie...',
+    weekError: 'Nie udało się załadować.',
+    weekDays: 'dni z nastrojem',
+    weekAvg: 'średni nastrój',
+    convsTitle: '💬 Rozmowy',
+    convsEmpty: 'Nie masz jeszcze żadnych rozmów 🌸',
+    convsLoading: 'Ładowanie...',
+    convsError: 'Błąd ładowania.',
+    convsDelete: 'Usunąć tę rozmowę?',
+    premiumTitle: 'Soleil Premium',
+    premiumSubtitle: 'Głębsza analiza, prawdziwa relacja, bez ograniczeń',
+    premiumF1title: 'Analiza wzorców emocjonalnych',
+    premiumF1desc: 'Soleil identyfikuje Twoje powtarzające się wzorce i pomaga je zrozumieć',
+    premiumF2title: 'Nielimitowane rozmowy',
+    premiumF2desc: 'Rozmawiaj bez ograniczeń — Soleil jest zawsze do dyspozycji',
+    premiumF3title: 'Głębsza relacja z AI',
+    premiumF3desc: 'Bardziej osobiste, wnikliwe i szczere odpowiedzi',
+    premiumF4title: 'Claude Sonnet (mocniejszy model)',
+    premiumF4desc: 'Jeszcze głębsze rozumienie i bardziej trafne spostrzeżenia',
+    premiumBtn: '✨ Przejdź na Premium',
+    premiumPeriod: '/ miesiąc',
   },
   en: {
     tagline: 'Always here for you',
     welcomeTitle: 'Hey, I\'m here for you',
     welcomeText: 'You can tell me anything — your worries, problems, sadness. I\'ll help you see them from a new perspective. 💛',
-    s1: '😔 I\'m sad', s2: '💼 Work / school problem', s3: '💔 Argument with someone', s4: '😰 I feel stressed',
+    s1: '😔 I\'m sad', s2: '💼 Work/school problem', s3: '💔 Argument with someone', s4: '😰 I feel stressed',
     placeholder: 'Tell me about your day...',
     loginBtn: 'Sign in',
     weekBtn: '📊',
@@ -449,12 +472,35 @@ const translations = {
     moodDesc: 'Daily mood tracking helps Soleil understand you better.',
     saveMood: 'Save mood',
     moodNote: 'Want to add something? (optional)',
+    weekTitle: 'Your week 📊',
+    weekClose: 'Close',
+    weekLoading: 'Loading...',
+    weekError: 'Failed to load.',
+    weekDays: 'days with mood',
+    weekAvg: 'average mood',
+    convsTitle: '💬 Conversations',
+    convsEmpty: 'You don\'t have any conversations yet 🌸',
+    convsLoading: 'Loading...',
+    convsError: 'Loading error.',
+    convsDelete: 'Delete this conversation?',
+    premiumTitle: 'Soleil Premium',
+    premiumSubtitle: 'Deeper analysis, real connection, unlimited',
+    premiumF1title: 'Emotional pattern analysis',
+    premiumF1desc: 'Soleil identifies your recurring patterns and helps you understand them',
+    premiumF2title: 'Unlimited conversations',
+    premiumF2desc: 'Talk without limits — Soleil is always available',
+    premiumF3title: 'Deeper AI relationship',
+    premiumF3desc: 'More personal, insightful and honest responses',
+    premiumF4title: 'Claude Sonnet (stronger model)',
+    premiumF4desc: 'Even deeper understanding and more accurate insights',
+    premiumBtn: '✨ Go Premium',
+    premiumPeriod: '/ month',
   },
   uk: {
     tagline: 'Завжди тут для тебе',
     welcomeTitle: 'Привіт, я тут для тебе',
     welcomeText: 'Ти можеш розповісти мені все — свої турботи, проблеми, смуток. Я допоможу тобі подивитися на них з нової точки зору. 💛',
-    s1: '😔 Мені сумно', s2: '💼 Проблема на роботі / в школі', s3: '💔 Сварка з близькою людиною', s4: '😰 Я відчуваю стрес',
+    s1: '😔 Мені сумно', s2: '💼 Проблема на роботі/в школі', s3: '💔 Сварка з близькою людиною', s4: '😰 Я відчуваю стрес',
     placeholder: 'Розкажи мені про свій день...',
     loginBtn: 'Увійти',
     weekBtn: '📊',
@@ -467,12 +513,35 @@ const translations = {
     moodDesc: 'Щоденне відстеження настрою допомагає Soleil краще тебе розуміти.',
     saveMood: 'Зберегти настрій',
     moodNote: 'Хочеш щось додати? (необов\'язково)',
+    weekTitle: 'Твій тиждень 📊',
+    weekClose: 'Закрити',
+    weekLoading: 'Завантаження...',
+    weekError: 'Не вдалося завантажити.',
+    weekDays: 'днів з настроєм',
+    weekAvg: 'середній настрій',
+    convsTitle: '💬 Розмови',
+    convsEmpty: 'У тебе ще немає розмов 🌸',
+    convsLoading: 'Завантаження...',
+    convsError: 'Помилка завантаження.',
+    convsDelete: 'Видалити цю розмову?',
+    premiumTitle: 'Soleil Premium',
+    premiumSubtitle: 'Глибший аналіз, справжній зв\'язок, без обмежень',
+    premiumF1title: 'Аналіз емоційних патернів',
+    premiumF1desc: 'Soleil визначає твої повторювані патерни і допомагає їх зрозуміти',
+    premiumF2title: 'Необмежені розмови',
+    premiumF2desc: 'Спілкуйся без обмежень — Soleil завжди доступний',
+    premiumF3title: 'Глибші стосунки з AI',
+    premiumF3desc: 'Більш особисті, проникливі та чесні відповіді',
+    premiumF4title: 'Claude Sonnet (потужніша модель)',
+    premiumF4desc: 'Ще глибше розуміння та точніші спостереження',
+    premiumBtn: '✨ Перейти на Premium',
+    premiumPeriod: '/ місяць',
   },
   de: {
     tagline: 'Immer für dich da',
-    welcomeTitle: 'Hallo, ich bin für dich da',
+    welcomeTitle: 'Hey, ich bin für dich da',
     welcomeText: 'Du kannst mir alles erzählen — deine Sorgen, Probleme, Traurigkeit. Ich helfe dir, sie aus einer neuen Perspektive zu sehen. 💛',
-    s1: '😔 Ich bin traurig', s2: '💼 Problem bei der Arbeit / Schule', s3: '💔 Streit mit jemandem', s4: '😰 Ich fühle mich gestresst',
+    s1: '😔 Ich bin traurig', s2: '💼 Problem bei der Arbeit/Schule', s3: '💔 Streit mit jemandem', s4: '😰 Ich fühle mich gestresst',
     placeholder: 'Erzähl mir von deinem Tag...',
     loginBtn: 'Anmelden',
     weekBtn: '📊',
@@ -485,12 +554,35 @@ const translations = {
     moodDesc: 'Tägliches Stimmungs-Tracking hilft Soleil, dich besser zu verstehen.',
     saveMood: 'Stimmung speichern',
     moodNote: 'Möchtest du etwas hinzufügen? (optional)',
+    weekTitle: 'Deine Woche 📊',
+    weekClose: 'Schließen',
+    weekLoading: 'Laden...',
+    weekError: 'Laden fehlgeschlagen.',
+    weekDays: 'Tage mit Stimmung',
+    weekAvg: 'Durchschnittsstimmung',
+    convsTitle: '💬 Gespräche',
+    convsEmpty: 'Du hast noch keine Gespräche 🌸',
+    convsLoading: 'Laden...',
+    convsError: 'Ladefehler.',
+    convsDelete: 'Dieses Gespräch löschen?',
+    premiumTitle: 'Soleil Premium',
+    premiumSubtitle: 'Tiefere Analyse, echte Verbindung, unbegrenzt',
+    premiumF1title: 'Analyse emotionaler Muster',
+    premiumF1desc: 'Soleil identifiziert deine wiederkehrenden Muster und hilft dir, sie zu verstehen',
+    premiumF2title: 'Unbegrenzte Gespräche',
+    premiumF2desc: 'Chatte ohne Einschränkungen — Soleil ist immer verfügbar',
+    premiumF3title: 'Tiefere KI-Beziehung',
+    premiumF3desc: 'Persönlichere, aufschlussreichere und ehrlichere Antworten',
+    premiumF4title: 'Claude Sonnet (stärkeres Modell)',
+    premiumF4desc: 'Noch tieferes Verständnis und treffendere Einblicke',
+    premiumBtn: '✨ Zu Premium wechseln',
+    premiumPeriod: '/ Monat',
   },
   es: {
     tagline: 'Siempre aquí para ti',
     welcomeTitle: 'Hola, estoy aquí para ti',
     welcomeText: 'Puedes contarme todo — tus preocupaciones, problemas, tristezas. Te ayudaré a verlos desde una nueva perspectiva. 💛',
-    s1: '😔 Estoy triste', s2: '💼 Problema en el trabajo / escuela', s3: '💔 Pelea con alguien', s4: '😰 Me siento estresado/a',
+    s1: '😔 Estoy triste', s2: '💼 Problema en el trabajo/escuela', s3: '💔 Pelea con alguien', s4: '😰 Me siento estresado/a',
     placeholder: 'Cuéntame sobre tu día...',
     loginBtn: 'Iniciar sesión',
     weekBtn: '📊',
@@ -503,6 +595,29 @@ const translations = {
     moodDesc: 'El seguimiento diario del estado de ánimo ayuda a Soleil a entenderte mejor.',
     saveMood: 'Guardar estado de ánimo',
     moodNote: '¿Quieres añadir algo? (opcional)',
+    weekTitle: 'Tu semana 📊',
+    weekClose: 'Cerrar',
+    weekLoading: 'Cargando...',
+    weekError: 'Error al cargar.',
+    weekDays: 'días con estado de ánimo',
+    weekAvg: 'estado de ánimo promedio',
+    convsTitle: '💬 Conversaciones',
+    convsEmpty: 'Todavía no tienes conversaciones 🌸',
+    convsLoading: 'Cargando...',
+    convsError: 'Error de carga.',
+    convsDelete: '¿Eliminar esta conversación?',
+    premiumTitle: 'Soleil Premium',
+    premiumSubtitle: 'Análisis más profundo, conexión real, sin límites',
+    premiumF1title: 'Análisis de patrones emocionales',
+    premiumF1desc: 'Soleil identifica tus patrones recurrentes y te ayuda a entenderlos',
+    premiumF2title: 'Conversaciones ilimitadas',
+    premiumF2desc: 'Habla sin límites — Soleil siempre está disponible',
+    premiumF3title: 'Relación más profunda con IA',
+    premiumF3desc: 'Respuestas más personales, perspicaces y honestas',
+    premiumF4title: 'Claude Sonnet (modelo más potente)',
+    premiumF4desc: 'Comprensión aún más profunda y perspectivas más precisas',
+    premiumBtn: '✨ Ir a Premium',
+    premiumPeriod: '/ mes',
   }
 };
 
@@ -522,11 +637,11 @@ function updateInterfaceLanguage(lang) {
   if (btns[3]) btns[3].textContent = t.s4;
   // Input
   document.getElementById('userInput').placeholder = t.placeholder;
-  // New chat btn
+  // Rozmowy
   document.querySelector('.new-chat-btn').textContent = t.newChat;
-  // Sign out
+  document.querySelector('.conversations-header h2').textContent = t.convsTitle;
+  // Sign out / premium menu
   document.querySelector('.user-menu-btn.danger').textContent = t.signOut;
-  // Premium menu
   const premBtn = document.getElementById('premiumMenuBtn');
   if (premBtn) premBtn.textContent = t.premiumMenu;
   // Auth popup
@@ -537,6 +652,19 @@ function updateInterfaceLanguage(lang) {
   document.querySelector('#moodOverlay p').textContent = t.moodDesc;
   document.getElementById('saveMoodBtn').textContent = t.saveMood;
   document.getElementById('moodNote').placeholder = t.moodNote;
+  // Tydzień popup
+  document.querySelector('#summaryOverlay h2').textContent = t.weekTitle;
+  document.querySelector('#summaryOverlay .popup-btn').textContent = t.weekClose;
+  // Premium popup
+  document.querySelector('.premium-header h2').textContent = t.premiumTitle;
+  document.querySelector('.premium-header p').textContent = t.premiumSubtitle;
+  const features = document.querySelectorAll('.premium-feature');
+  if (features[0]) { features[0].querySelector('.feature-title').textContent = t.premiumF1title; features[0].querySelector('.feature-desc').textContent = t.premiumF1desc; }
+  if (features[1]) { features[1].querySelector('.feature-title').textContent = t.premiumF2title; features[1].querySelector('.feature-desc').textContent = t.premiumF2desc; }
+  if (features[2]) { features[2].querySelector('.feature-title').textContent = t.premiumF3title; features[2].querySelector('.feature-desc').textContent = t.premiumF3desc; }
+  if (features[3]) { features[3].querySelector('.feature-title').textContent = t.premiumF4title; features[3].querySelector('.feature-desc').textContent = t.premiumF4desc; }
+  document.querySelector('.premium-btn').textContent = t.premiumBtn;
+  document.querySelector('.price-period').textContent = t.premiumPeriod;
 }
 
 // History API
@@ -688,16 +816,17 @@ async function saveMood() {
 
 // PODSUMOWANIE
 async function openSummary() {
+  const t = translations[currentLanguage] || translations.pl;
   pushOverlayState('summaryOverlay');
   document.getElementById('summaryOverlay').classList.add('visible');
-  document.getElementById('summaryContent').innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px 0">Ładowanie...</p>';
+  document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekLoading}</p>`;
   try {
     const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id }) });
     const data = await res.json();
     const moodEmojis = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😊' };
     const avgEmoji = moodEmojis[Math.round(parseFloat(data.avgMood))] || '😐';
-    document.getElementById('summaryContent').innerHTML = `<div class="summary-content"><div class="summary-stats"><div class="stat-box"><div class="stat-value">${data.moodCount || 0}</div><div class="stat-label">dni z nastrojem</div></div><div class="stat-box"><div class="stat-value">${avgEmoji} ${data.avgMood || '—'}</div><div class="stat-label">średni nastrój</div></div></div><div class="summary-text">${data.summary}</div></div>`;
-  } catch (err) { document.getElementById('summaryContent').innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px 0">Nie udało się załadować.</p>'; }
+    document.getElementById('summaryContent').innerHTML = `<div class="summary-content"><div class="summary-stats"><div class="stat-box"><div class="stat-value">${data.moodCount || 0}</div><div class="stat-label">${t.weekDays}</div></div><div class="stat-box"><div class="stat-value">${avgEmoji} ${data.avgMood || '—'}</div><div class="stat-label">${t.weekAvg}</div></div></div><div class="summary-text">${data.summary}</div></div>`;
+  } catch (err) { document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekError}</p>`; }
 }
 function closeSummary() { document.getElementById('summaryOverlay').classList.remove('visible'); }
 
@@ -706,12 +835,13 @@ async function openConversations() { pushOverlayState('conversationsOverlay'); d
 function closeConversations() { document.getElementById('conversationsOverlay').classList.remove('visible'); }
 
 async function loadConversationsList() {
+  const t = translations[currentLanguage] || translations.pl;
   const list = document.getElementById('conversationsList');
-  list.innerHTML = '<div class="conv-empty">Ładowanie...</div>';
+  list.innerHTML = `<div class="conv-empty">${t.convsLoading}</div>`;
   try {
     const res = await fetch(`/api/history?userId=${currentUser.id}`);
     const data = await res.json();
-    if (!data.conversations || data.conversations.length === 0) { list.innerHTML = '<div class="conv-empty">Nie masz jeszcze żadnych rozmów 🌸</div>'; return; }
+    if (!data.conversations || data.conversations.length === 0) { list.innerHTML = `<div class="conv-empty">${t.convsEmpty}</div>`; return; }
     list.innerHTML = data.conversations.map(conv => {
       const date = new Date(conv.updatedAt).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
       return `<div class="conv-item ${conv.id === currentConversationId ? 'active' : ''}" onclick="loadConversation('${conv.id}')">
@@ -720,7 +850,7 @@ async function loadConversationsList() {
         <button class="conv-delete" onclick="deleteConversation(event, '${conv.id}')">🗑️</button>
       </div>`;
     }).join('');
-  } catch (err) { list.innerHTML = '<div class="conv-empty">Błąd ładowania.</div>'; }
+  } catch (err) { list.innerHTML = `<div class="conv-empty">${t.convsError}</div>`; }
 }
 
 async function loadConversation(conversationId) {
@@ -738,7 +868,8 @@ async function loadConversation(conversationId) {
 
 async function deleteConversation(event, conversationId) {
   event.stopPropagation();
-  if (!confirm('Usunąć tę rozmowę?')) return;
+  const t = translations[currentLanguage] || translations.pl;
+  if (!confirm(t.convsDelete)) return;
   try {
     await fetch('/api/history', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, conversationId }) });
     if (currentConversationId === conversationId) startNewChat();

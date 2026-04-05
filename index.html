@@ -209,16 +209,13 @@
   .mood-bar { display: flex; justify-content: center; gap: 14px; padding: 5px 0 0; font-size: 0.95rem; opacity: 0.5; }
 
   /* Daily quote */
-  .daily-card { background: white; border-radius: 16px; padding: 16px 18px; margin-top: 16px; border: 1px solid rgba(232,132,90,0.15); box-shadow: 0 3px 12px var(--shadow); animation: fadeSlideIn 0.8s ease both; animation-delay: 0.3s; }
-  .daily-quote { font-family: 'Playfair Display', serif; font-size: 0.9rem; color: var(--text); line-height: 1.6; font-style: italic; margin-bottom: 5px; }
-  .daily-author { font-size: 0.7rem; color: var(--accent); font-weight: 700; margin-bottom: 12px; }
-  .daily-divider { height: 1px; background: rgba(232,132,90,0.12); margin-bottom: 12px; }
-  .daily-question-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
-  .daily-question { font-size: 0.84rem; color: var(--text); line-height: 1.5; font-weight: 600; }
-  .daily-action { margin-top: 12px; }
-  .daily-action button { background: none; border: 1.5px solid var(--accent2); color: var(--accent); padding: 5px 14px; border-radius: 12px; font-size: 0.76rem; font-family: 'Lato', sans-serif; cursor: pointer; transition: all 0.2s; }
-  .daily-action button:hover { background: var(--accent); color: white; border-color: var(--accent); }
-  .daily-loading { text-align: center; padding: 12px 0; color: var(--muted); font-size: 0.8rem; }
+  .daily-card { background: white; border-radius: 14px; padding: 12px 16px; margin-top: 14px; border: 1px solid rgba(232,132,90,0.12); box-shadow: 0 2px 10px var(--shadow); animation: fadeSlideIn 0.8s ease both; animation-delay: 0.3s; display: flex; align-items: flex-start; gap: 10px; }
+  .daily-icon { font-size: 1rem; flex-shrink: 0; margin-top: 2px; opacity: 0.7; }
+  .daily-inner { flex: 1; min-width: 0; }
+  .daily-label { font-size: 0.62rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .daily-quote { font-family: 'Lato', sans-serif; font-size: 0.82rem; color: var(--text); line-height: 1.55; font-style: italic; margin-bottom: 3px; }
+  .daily-author { font-size: 0.68rem; color: var(--muted); font-weight: 600; }
+  .daily-loading { text-align: center; padding: 8px 0; color: var(--muted); font-size: 0.78rem; }
   #clerk-sign-in { min-height: 200px; }
   * { scrollbar-width: thin; scrollbar-color: var(--accent2) transparent; }
 </style>
@@ -385,17 +382,15 @@
         <button class="suggestion-btn" onclick="sendSuggestion(translations[currentLanguage]?.s4 || translations.pl.s4)">😰 Czuję stres</button>
       </div>
 
-      <!-- Karta cytatu i refleksji dnia -->
+      <!-- Cytat dnia -->
       <div class="daily-card" id="dailyCard">
-        <div class="daily-loading" id="dailyLoading">✨ Ładowanie refleksji dnia...</div>
-        <div id="dailyContent" style="display:none">
-          <div class="daily-quote" id="dailyQuote"></div>
-          <div class="daily-author" id="dailyAuthor"></div>
-          <div class="daily-divider"></div>
-          <div class="daily-question-label" id="dailyLabel">Pytanie dnia</div>
-          <div class="daily-question" id="dailyQuestion"></div>
-          <div class="daily-action">
-            <button onclick="sendSuggestion(document.getElementById('dailyQuestion').textContent)" id="dailyBtn">Odpowiedz Soleil →</button>
+        <div class="daily-icon">✨</div>
+        <div class="daily-inner">
+          <div class="daily-loading" id="dailyLoading">Ładowanie cytatu dnia...</div>
+          <div id="dailyContent" style="display:none">
+            <div class="daily-label" id="dailyLabel">Cytat dnia</div>
+            <div class="daily-quote" id="dailyQuote"></div>
+            <div class="daily-author" id="dailyAuthor"></div>
           </div>
         </div>
       </div>
@@ -470,13 +465,10 @@ async function loadDailyQuote() {
 
   document.getElementById('dailyQuote').textContent = `"${data.quote}"`;
   document.getElementById('dailyAuthor').textContent = `— ${data.author}`;
-  document.getElementById('dailyQuestion').textContent = data.question;
 
-  // Tłumaczenie etykiety i przycisku
-  const labels = { pl: 'Pytanie dnia', en: 'Question of the day', uk: 'Питання дня', de: 'Frage des Tages', es: 'Pregunta del día' };
-  const btns = { pl: 'Odpowiedz Soleilowi →', en: 'Answer Soleil →', uk: 'Відповісти Soleil →', de: 'Soleil antworten →', es: 'Responder a Soleil →' };
+  // Tłumaczenie etykiety
+  const labels = { pl: 'Cytat dnia', en: 'Quote of the day', uk: 'Цитата дня', de: 'Zitat des Tages', es: 'Cita del día' };
   document.getElementById('dailyLabel').textContent = labels[currentLanguage] || labels.pl;
-  document.getElementById('dailyBtn').textContent = btns[currentLanguage] || btns.pl;
 
   document.getElementById('dailyLoading').style.display = 'none';
   document.getElementById('dailyContent').style.display = 'block';

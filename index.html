@@ -344,7 +344,7 @@
   <header>
     <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
     <div class="logo-circle">
-      <img src="logosoleil.png" style="width:100px;height:100px;object-fit:contain;">
+      <img src="logosoleil.png" style="width:90px;height:90px;object-fit:contain;">
     </div>
     <div class="header-text">
       <h1>Soleil</h1>
@@ -367,10 +367,10 @@
       <h2>Hej, jestem tu dla Ciebie</h2>
       <p>Możesz mi powiedzieć wszystko — swoje troski, problemy, smutki. Pomogę Ci spojrzeć na nie z nowej perspektywy. 💛</p>
       <div class="suggestions">
-        <button class="suggestion-btn" onclick="sendSuggestion('Czuję się dziś bardzo smutny/a')">😔 Jestem smutny/a</button>
-        <button class="suggestion-btn" onclick="sendSuggestion('Mam problem w pracy/szkole i nie wiem co robić')">💼 Problem w pracy/szkole</button>
-        <button class="suggestion-btn" onclick="sendSuggestion('Pokłóciłem/am się z bliską osobą')">💔 Kłótnia z kimś bliskim</button>
-        <button class="suggestion-btn" onclick="sendSuggestion('Jestem bardzo zestresowany/a')">😰 Czuję stres</button>
+        <button class="suggestion-btn" onclick="sendSuggestion(translations[currentLanguage]?.s1 || translations.pl.s1)">😔 Jestem smutny/a</button>
+        <button class="suggestion-btn" onclick="sendSuggestion(translations[currentLanguage]?.s2 || translations.pl.s2)">💼 Problem w pracy/szkole</button>
+        <button class="suggestion-btn" onclick="sendSuggestion(translations[currentLanguage]?.s3 || translations.pl.s3)">💔 Kłótnia z kimś bliskim</button>
+        <button class="suggestion-btn" onclick="sendSuggestion(translations[currentLanguage]?.s4 || translations.pl.s4)">😰 Czuję stres</button>
       </div>
     </div>
   </div>
@@ -821,7 +821,7 @@ async function openSummary() {
   document.getElementById('summaryOverlay').classList.add('visible');
   document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekLoading}</p>`;
   try {
-    const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id }) });
+    const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, language: currentLanguage }) });
     const data = await res.json();
     const moodEmojis = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😊' };
     const avgEmoji = moodEmojis[Math.round(parseFloat(data.avgMood))] || '😐';

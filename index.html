@@ -405,6 +405,9 @@
       </button>
     </div>
     <div class="mood-bar">🌸 🌈 ✨ 🌻 💛 🌿 🤗</div>
+    <div style="text-align:center;padding:4px 0 0;font-size:0.65rem;opacity:0.45;">
+      <a href="/privacy.html" style="color:var(--muted);text-decoration:none;" id="privacyLink">Polityka prywatności</a>
+    </div>
   </div>
 </div>
 
@@ -726,6 +729,10 @@ function updateInterfaceLanguage(lang) {
   if (features[3]) { features[3].querySelector('.feature-title').textContent = t.premiumF4title; features[3].querySelector('.feature-desc').textContent = t.premiumF4desc; }
   document.querySelector('.premium-btn').textContent = t.premiumBtn;
   document.querySelector('.price-period').textContent = t.premiumPeriod;
+  // Privacy link
+  const privacyLinks = { pl: 'Polityka prywatności', en: 'Privacy Policy', uk: 'Політика конфіденційності', de: 'Datenschutzerklärung', es: 'Política de Privacidad' };
+  const privacyLink = document.getElementById('privacyLink');
+  if (privacyLink) privacyLink.textContent = privacyLinks[lang] || privacyLinks.pl;
 }
 
 // History API

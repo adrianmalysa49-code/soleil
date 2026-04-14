@@ -55,6 +55,12 @@
 
   #streakBadge { display: none; background: linear-gradient(135deg,#ff6b35,#f7c59f); color: white; padding: 4px 9px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 8px rgba(255,107,53,0.3); white-space: nowrap; }
 
+  /* Push notification button */
+  .push-btn { width: 32px; height: 32px; border-radius: 50%; background: white; border: 1.5px solid rgba(232,132,90,0.25); display: none; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 8px var(--shadow); transition: all 0.22s ease; font-size: 0.9rem; }
+  .push-btn:hover { background: var(--accent); }
+  .push-btn.visible { display: flex; }
+  .push-btn.active { background: rgba(232,132,90,0.1); border-color: var(--accent); }
+
   /* Premium badge */
   #premiumBadge { display: none; background: linear-gradient(135deg, var(--premium), var(--premium2)); color: white; padding: 4px 9px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 8px rgba(139,92,246,0.3); white-space: nowrap; }
 
@@ -362,6 +368,7 @@
     <div class="header-actions">
       <span id="premiumBadge">✨ Premium</span>
       <span id="streakBadge"></span>
+      <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()" title="Powiadomienia">🔔</button>
       <button class="lang-btn" id="langBtn" onclick="openLanguage()">🇵🇱</button>
       <button class="header-icon-btn" id="conversationsBtn" onclick="openConversations()" title="Rozmowy">💬</button>
       <button class="week-btn" id="weekBtn" onclick="openSummary()" title="Mój tydzień">📊</button>
@@ -811,6 +818,7 @@ function updateAuthUI(user) {
     document.getElementById('userName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Użytkownik';
     document.getElementById('userEmail').textContent = user.emailAddresses?.[0]?.emailAddress || '';
     loadStreak(user.id);
+    initPushNotifications(user.id);
   } else {
     loginBtn.style.display = 'block';
     userAvatar.classList.remove('visible');
@@ -818,6 +826,7 @@ function updateAuthUI(user) {
     convBtn.classList.remove('visible');
     badge.style.display = 'none';
     document.getElementById('premiumBadge').style.display = 'none';
+    document.getElementById('pushBtn').classList.remove('visible');
   }
 }
 
@@ -844,6 +853,85 @@ async function startCheckout() {
     if (data.url) window.location.href = data.url;
     else { btn.textContent = '✨ Przejdź na Premium'; btn.disabled = false; }
   } catch (err) { btn.textContent = '✨ Przejdź na Premium'; btn.disabled = false; }
+}
+
+// PUSH NOTIFICATIONS
+let pushSubscription = null;
+
+async function initPushNotifications(userId) {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  const pushBtn = document.getElementById('pushBtn');
+  pushBtn.classList.add('visible');
+
+  const permission = Notification.permission;
+  if (permission === 'granted') {
+    pushBtn.textContent = '🔔';
+    pushBtn.classList.add('active');
+    pushBtn.title = 'Powiadomienia włączone';
+  } else {
+    pushBtn.textContent = '🔕';
+    pushBtn.classList.remove('active');
+    pushBtn.title = 'Włącz powiadomienia';
+  }
+}
+
+async function togglePushNotifications() {
+  if (!currentUser) { openAuth(); return; }
+
+  if (Notification.permission === 'granted' && pushSubscription) {
+    // Wyłącz powiadomienia
+    await pushSubscription.unsubscribe();
+    await fetch('/api/push-subscribe', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id })
+    });
+    pushSubscription = null;
+    document.getElementById('pushBtn').textContent = '🔕';
+    document.getElementById('pushBtn').classList.remove('active');
+    document.getElementById('pushBtn').title = 'Włącz powiadomienia';
+    return;
+  }
+
+  // Włącz powiadomienia
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    // Pobierz public key
+    const keyRes = await fetch('/api/push-subscribe');
+    const { publicKey } = await keyRes.json();
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
+
+    pushSubscription = subscription;
+
+    await fetch('/api/push-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id, subscription: subscription.toJSON() })
+    });
+
+    document.getElementById('pushBtn').textContent = '🔔';
+    document.getElementById('pushBtn').classList.add('active');
+    document.getElementById('pushBtn').title = 'Powiadomienia włączone';
+
+  } catch (err) {
+    console.error('Push error:', err);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
 }
 
 // STREAK

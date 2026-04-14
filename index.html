@@ -885,18 +885,47 @@ function updatePushMenuLabel(isEnabled) {
 
 async function togglePushNotifications() {
   if (!currentUser) { openAuth(); return; }
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
 
-  if (Notification.permission === 'granted' && pushSubscription) {
-    await pushSubscription.unsubscribe();
-    await fetch('/api/push-subscribe', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: currentUser.id })
-    });
-    pushSubscription = null;
-    updatePushMenuLabel(false);
-    return;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const existing = await registration.pushManager.getSubscription();
+
+    if (existing) {
+      // Wyłącz — usuń istniejącą subskrypcję
+      await existing.unsubscribe();
+      await fetch('/api/push-subscribe', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id })
+      });
+      pushSubscription = null;
+      updatePushMenuLabel(false);
+    } else {
+      // Włącz — utwórz nową subskrypcję
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+
+      const keyRes = await fetch('/api/push-subscribe');
+      const { publicKey } = await keyRes.json();
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+
+      pushSubscription = subscription;
+      await fetch('/api/push-subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, subscription: subscription.toJSON() })
+      });
+      updatePushMenuLabel(true);
+    }
+  } catch (err) {
+    console.error('Push error:', err);
   }
+}
 
   // Włącz powiadomienia
   try {

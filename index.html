@@ -353,7 +353,7 @@
   </div>
   <button class="user-menu-btn" onclick="openSummary(); toggleUserMenu()">📊 <span id="menuWeekLabel">Mój tydzień</span></button>
   <button class="user-menu-btn" onclick="openLanguage(); toggleUserMenu()">🌍 <span id="menuLangLabel">Język</span> <span id="menuLangFlag">🇵🇱</span></button>
-  <button class="user-menu-btn" id="pushMenuBtn" onclick="togglePushNotifications()">🔔 <span id="menuPushLabel">Włącz powiadomienia</span></button>
+ <button class="user-menu-btn" id="pushMenuBtn" onclick="setTimeout(togglePushNotifications, 300)">🔔 <span id="menuPushLabel">Włącz powiadomienia</span></button>
   <button class="user-menu-btn premium-menu" id="premiumMenuBtn" onclick="openPremium()" style="display:none">✨ <span id="menuPremiumLabel">Przejdź na Premium</span></button>
   <div style="height:1px;background:rgba(232,132,90,0.1);margin:4px 0;"></div>
   <button class="user-menu-btn danger" onclick="signOut()">🚪 <span id="menuSignOutLabel">Wyloguj się</span></button>

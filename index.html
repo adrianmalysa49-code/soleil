@@ -434,9 +434,11 @@ const langFlags = { pl: '🇵🇱', en: '🇬🇧', uk: '🇺🇦', de: '🇩�
 function openLanguage() { pushOverlayState('languageOverlay'); document.getElementById('languageOverlay').classList.add('visible'); updateLangUI(); }
 function closeLanguage() { document.getElementById('languageOverlay').classList.remove('visible'); }
 function updateLangUI() {
-  document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
+ document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
   document.getElementById(`lang-${currentLanguage}`)?.classList.add('active');
-  document.getElementById('langBtn').textContent = langFlags[currentLanguage] || '🌍';
+  const flag = langFlags[currentLanguage] || '🌍';
+  const menuFlag = document.getElementById('menuLangFlag');
+  if (menuFlag) menuFlag.textContent = flag;
 }
 function setLanguage(lang) {
   currentLanguage = lang;

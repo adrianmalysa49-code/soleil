@@ -351,8 +351,12 @@
     <div class="user-menu-name" id="userName">—</div>
     <div class="user-menu-email" id="userEmail">—</div>
   </div>
-  <button class="user-menu-btn premium-menu" id="premiumMenuBtn" onclick="openPremium()" style="display:none">✨ Przejdź na Premium</button>
-  <button class="user-menu-btn danger" onclick="signOut()">🚪 Wyloguj się</button>
+  <button class="user-menu-btn" onclick="openSummary(); toggleUserMenu()">📊 <span id="menuWeekLabel">Mój tydzień</span></button>
+  <button class="user-menu-btn" onclick="openLanguage(); toggleUserMenu()">🌍 <span id="menuLangLabel">Język</span> <span id="menuLangFlag">🇵🇱</span></button>
+  <button class="user-menu-btn" id="pushMenuBtn" onclick="togglePushNotifications(); toggleUserMenu()">🔔 <span id="menuPushLabel">Włącz powiadomienia</span></button>
+  <button class="user-menu-btn premium-menu" id="premiumMenuBtn" onclick="openPremium()" style="display:none">✨ <span id="menuPremiumLabel">Przejdź na Premium</span></button>
+  <div style="height:1px;background:rgba(232,132,90,0.1);margin:4px 0;"></div>
+  <button class="user-menu-btn danger" onclick="signOut()">🚪 <span id="menuSignOutLabel">Wyloguj się</span></button>
 </div>
 
 <div class="app">
@@ -368,10 +372,7 @@
     <div class="header-actions">
       <span id="premiumBadge">✨ Premium</span>
       <span id="streakBadge"></span>
-      <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()" title="Powiadomienia">🔔</button>
-      <button class="lang-btn" id="langBtn" onclick="openLanguage()">🇵🇱</button>
       <button class="header-icon-btn" id="conversationsBtn" onclick="openConversations()" title="Rozmowy">💬</button>
-      <button class="week-btn" id="weekBtn" onclick="openSummary()" title="Mój tydzień">📊</button>
       <button class="auth-btn" id="loginBtn" onclick="openAuth()">Zaloguj się</button>
       <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()"></div>
     </div>
@@ -740,6 +741,18 @@ function updateInterfaceLanguage(lang) {
   const privacyLinks = { pl: 'Polityka prywatności', en: 'Privacy Policy', uk: 'Політика конфіденційності', de: 'Datenschutzerklärung', es: 'Política de Privacidad' };
   const privacyLink = document.getElementById('privacyLink');
   if (privacyLink) privacyLink.textContent = privacyLinks[lang] || privacyLinks.pl;
+  // Menu items
+  const menuWeek = { pl: 'Mój tydzień', en: 'My week', uk: 'Мій тиждень', de: 'Meine Woche', es: 'Mi semana' };
+  const menuLang = { pl: 'Język', en: 'Language', uk: 'Мова', de: 'Sprache', es: 'Idioma' };
+  const menuPush = { pl: 'Powiadomienia', en: 'Notifications', uk: 'Сповіщення', de: 'Benachrichtigungen', es: 'Notificaciones' };
+  const menuPrem = { pl: 'Przejdź na Premium', en: 'Go Premium', uk: 'Перейти на Premium', de: 'Zu Premium', es: 'Ir a Premium' };
+  const menuOut = { pl: 'Wyloguj się', en: 'Sign out', uk: 'Вийти', de: 'Abmelden', es: 'Cerrar sesión' };
+  if (document.getElementById('menuWeekLabel')) document.getElementById('menuWeekLabel').textContent = menuWeek[lang] || menuWeek.pl;
+  if (document.getElementById('menuLangLabel')) document.getElementById('menuLangLabel').textContent = menuLang[lang] || menuLang.pl;
+  if (document.getElementById('menuLangFlag')) document.getElementById('menuLangFlag').textContent = langFlags[lang] || '🌍';
+  if (document.getElementById('menuPushLabel')) document.getElementById('menuPushLabel').textContent = menuPush[lang] || menuPush.pl;
+  if (document.getElementById('menuPremiumLabel')) document.getElementById('menuPremiumLabel').textContent = menuPrem[lang] || menuPrem.pl;
+  if (document.getElementById('menuSignOutLabel')) document.getElementById('menuSignOutLabel').textContent = menuOut[lang] || menuOut.pl;
 }
 
 // History API
@@ -805,13 +818,11 @@ function showSuccessMessage() {
 function updateAuthUI(user) {
   const loginBtn = document.getElementById('loginBtn');
   const userAvatar = document.getElementById('userAvatar');
-  const weekBtn = document.getElementById('weekBtn');
   const convBtn = document.getElementById('conversationsBtn');
   const badge = document.getElementById('streakBadge');
   if (user) {
     loginBtn.style.display = 'none';
     userAvatar.classList.add('visible');
-    weekBtn.classList.add('visible');
     convBtn.classList.add('visible');
     const initials = (user.firstName?.[0] || user.emailAddresses?.[0]?.emailAddress?.[0] || '?').toUpperCase();
     userAvatar.textContent = initials;
@@ -822,11 +833,9 @@ function updateAuthUI(user) {
   } else {
     loginBtn.style.display = 'block';
     userAvatar.classList.remove('visible');
-    weekBtn.classList.remove('visible');
     convBtn.classList.remove('visible');
     badge.style.display = 'none';
     document.getElementById('premiumBadge').style.display = 'none';
-    document.getElementById('pushBtn').classList.remove('visible');
   }
 }
 
@@ -860,26 +869,22 @@ let pushSubscription = null;
 
 async function initPushNotifications(userId) {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-  const pushBtn = document.getElementById('pushBtn');
-  pushBtn.classList.add('visible');
-
   const permission = Notification.permission;
-  if (permission === 'granted') {
-    pushBtn.textContent = '🔔';
-    pushBtn.classList.add('active');
-    pushBtn.title = 'Powiadomienia włączone';
-  } else {
-    pushBtn.textContent = '🔕';
-    pushBtn.classList.remove('active');
-    pushBtn.title = 'Włącz powiadomienia';
-  }
+  updatePushMenuLabel(permission === 'granted');
+}
+
+function updatePushMenuLabel(isEnabled) {
+  const label = document.getElementById('menuPushLabel');
+  if (!label) return;
+  const enabledLabels = { pl: 'Wyłącz powiadomienia', en: 'Disable notifications', uk: 'Вимкнути сповіщення', de: 'Benachrichtigungen aus', es: 'Desactivar notificaciones' };
+  const disabledLabels = { pl: 'Włącz powiadomienia', en: 'Enable notifications', uk: 'Увімкнути сповіщення', de: 'Benachrichtigungen an', es: 'Activar notificaciones' };
+  label.textContent = isEnabled ? (enabledLabels[currentLanguage] || enabledLabels.pl) : (disabledLabels[currentLanguage] || disabledLabels.pl);
 }
 
 async function togglePushNotifications() {
   if (!currentUser) { openAuth(); return; }
 
   if (Notification.permission === 'granted' && pushSubscription) {
-    // Wyłącz powiadomienia
     await pushSubscription.unsubscribe();
     await fetch('/api/push-subscribe', {
       method: 'DELETE',
@@ -887,9 +892,7 @@ async function togglePushNotifications() {
       body: JSON.stringify({ userId: currentUser.id })
     });
     pushSubscription = null;
-    document.getElementById('pushBtn').textContent = '🔕';
-    document.getElementById('pushBtn').classList.remove('active');
-    document.getElementById('pushBtn').title = 'Włącz powiadomienia';
+    updatePushMenuLabel(false);
     return;
   }
 
@@ -909,16 +912,12 @@ async function togglePushNotifications() {
     });
 
     pushSubscription = subscription;
-
     await fetch('/api/push-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: currentUser.id, subscription: subscription.toJSON() })
     });
-
-    document.getElementById('pushBtn').textContent = '🔔';
-    document.getElementById('pushBtn').classList.add('active');
-    document.getElementById('pushBtn').title = 'Powiadomienia włączone';
+    updatePushMenuLabel(true);
 
   } catch (err) {
     console.error('Push error:', err);

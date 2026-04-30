@@ -87,7 +87,14 @@ ${moodList}
   });
 
   const data = await response.json();
-  const summary = data.content?.[0]?.text || noDataMessages[language] || noDataMessages.pl;
+ let summary = data.content?.[0]?.text || noDataMessages[language] || noDataMessages.pl;
+// Konwertuj markdown na HTML
+summary = summary
+  .replace(/^# (.+)$/gm, '<strong style="font-size:1rem;display:block;margin-bottom:8px;">$1</strong>')
+  .replace(/^## (.+)$/gm, '<strong style="display:block;margin-bottom:6px;">$1</strong>')
+  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  .replace(/\n\n/g, '<br><br>')
+  .replace(/\n/g, '<br>');
 
   return res.status(200).json({ summary, moodCount: moods.length, avgMood: avg });
 }

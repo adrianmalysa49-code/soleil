@@ -100,21 +100,28 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, streak: newStreak });
   }
 
-  // GET — pobierz nastroje z ostatnich 7 dni
+// GET — pobierz nastroje
   if (req.method === 'GET') {
-    const { userId } = req.query;
+    const { userId, today } = req.query;
     if (!userId) return res.status(400).json({ error: 'Brak userId' });
 
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // Sprawdź czy dziś już zapisano nastrój
+    if (today === 'true') {
+      const todayDate = new Date().toISOString().split('T')[0];
+      const checkRes = await fetch(
+        `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${todayDate}T00:00:00&limit=1`,
+        { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+      );
+      const logs = await checkRes.json();
+      return res.status(200).json({ hasMoodToday: logs && logs.length > 0 });
+    }
 
+    // Pobierz nastroje z ostatnich 7 dni
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const response = await fetch(
       `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${sevenDaysAgo}&order=created_at.desc`,
       { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
     );
-
     const data = await response.json();
     return res.status(200).json({ moods: data });
   }
-
-  return res.status(405).json({ error: 'Metoda niedozwolona' });
-}

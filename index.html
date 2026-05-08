@@ -964,6 +964,46 @@ async function checkDailyMood() {
   }
 }
 
+function selectMood(value) {
+  selectedMood = value;
+  document.querySelectorAll('.mood-option').forEach((el, i) => el.classList.toggle('selected', i + 1 === value));
+  document.getElementById('saveMoodBtn').disabled = false;
+}
+
+function closeMood() {
+  document.getElementById('moodOverlay').classList.remove('visible');
+}
+
+async function saveMood() {
+  if (!selectedMood || !currentUser) return;
+  const note = document.getElementById('moodNote').value.trim();
+  const btn = document.getElementById('saveMoodBtn');
+  btn.disabled = true; btn.textContent = 'Zapisywanie...';
+  try {
+    const res = await fetch('/api/mood', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id, mood: selectedMood, note })
+    });
+    const data = await res.json();
+    if (data.streak) loadStreak(currentUser.id);
+    closeMood();
+    const moodMessages = {
+      1: 'Widzę że dziś jest ciężko. Jestem tu — powiedz mi co się dzieje.',
+      2: 'Czuję że nie jest najlepiej. Co sprawiło że tak się czujesz?',
+      3: 'Taki średni dzień... Co go kształtuje?',
+      4: 'Cieszę się że jest nieźle! Co dziś sprawiło że czujesz się dobrze?',
+      5: 'Świetnie! Co takiego się dzieje? 😊'
+    };
+    setTimeout(() => appendMessage('ai', moodMessages[selectedMood]), 500);
+    selectedMood = null;
+    document.getElementById('moodNote').value = '';
+    btn.textContent = translations[currentLanguage]?.saveMood || 'Zapisz nastrój';
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = translations[currentLanguage]?.saveMood || 'Zapisz nastrój';
+  }
+}  
 // PODSUMOWANIE
 async function openSummary() {
   const t = translations[currentLanguage] || translations.pl;

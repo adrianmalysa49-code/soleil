@@ -8,10 +8,13 @@ export default async function handler(req, res) {
   const { userId, language = 'pl' } = req.body;
   if (!userId) return res.status(400).json({ error: 'Brak userId' });
 
-  // Pobierz nastroje z ostatnich 7 dni
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+ // Pobierz nastroje z ostatnich 7 dni (czas polski)
+  const now = new Date();
+  const polandNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' }));
+  const sevenDaysAgo = new Date(polandNow.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
   const moodRes = await fetch(
-    `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${sevenDaysAgo}&order=created_at.asc`,
+    `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${sevenDaysAgoStr}T00:00:00+02:00&order=created_at.asc`,
     { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
   );
   const moods = await moodRes.json();

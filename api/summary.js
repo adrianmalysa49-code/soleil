@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   const sevenDaysAgo = new Date(polandNow.getTime() - 7 * 24 * 60 * 60 * 1000);
   const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
   const moodRes = await fetch(
-    `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${sevenDaysAgoStr}T00:00:00+02:00&order=created_at.asc`,
+ `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${sevenDaysAgoStr}T00:00:00%2B02:00&order=created_at.asc`,
     { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
   );
   const moods = await moodRes.json();

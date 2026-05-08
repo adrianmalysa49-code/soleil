@@ -105,15 +105,24 @@ export default async function handler(req, res) {
     const { userId, today } = req.query;
     if (!userId) return res.status(400).json({ error: 'Brak userId' });
 
-    // Sprawdź czy dziś już zapisano nastrój
-    if (today === 'true') {
-      const todayDate = new Date().toISOString().split('T')[0];
-      const checkRes = await fetch(
-        `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${todayDate}T00:00:00&limit=1`,
-        { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
-      );
-      const logs = await checkRes.json();
-      return res.status(200).json({ hasMoodToday: logs && logs.length > 0 });
+   // Sprawdź ile razy dziś zapisano nastrój (max 2, min 6h odstępu)
+    const now = new Date();
+    const polandOffset = now.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' });
+    const today = new Date(polandOffset).toISOString().split('T')[0];
+    const checkToday = await fetch(
+      `${supabaseUrl}/rest/v1/mood_logs?user_id=eq.${userId}&created_at=gte.${today}T00:00:00+02:00&order=created_at.desc`,
+      { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+    );
+    const todayLogs = await checkToday.json();
+    if (todayLogs && todayLogs.length >= 2) {
+      return res.status(200).json({ success: true, skipped: true });
+    }
+    if (todayLogs && todayLogs.length === 1) {
+      const lastEntry = new Date(todayLogs[0].created_at);
+      const hoursSince = (Date.now() - lastEntry.getTime()) / (1000 * 60 * 60);
+      if (hoursSince < 6) {
+        return res.status(200).json({ success: true, skipped: true });
+      }
     }
 
     // Pobierz nastroje z ostatnich 7 dni

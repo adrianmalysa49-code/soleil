@@ -1201,6 +1201,14 @@ async function shareWeekSummary() {
         ctx.textBaseline = 'middle';
         ctx.fillText(dayMoodEmojis[day.mood] || '😐', cx, dotsY + 3);
         ctx.textBaseline = 'alphabetic';
+      } else {
+        ctx.strokeStyle = 'rgba(58,46,40,0.28)';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx - 12, dotsY);
+        ctx.lineTo(cx + 12, dotsY);
+        ctx.stroke();
       }
       ctx.fillStyle = '#3a2e28';
       ctx.font = '400 28px Lato, sans-serif';

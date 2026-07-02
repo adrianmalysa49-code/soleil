@@ -1025,17 +1025,44 @@ async function openSummary() {
   const shareBtnLabelEl = document.getElementById('shareBtnLabel');
   if (shareBtnLabelEl) shareBtnLabelEl.textContent = shareLabels[currentLanguage] || shareLabels.pl;
   try {
-    const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, language: currentLanguage }) });
+    const [res, dailyMoods] = await Promise.all([
+      fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, language: currentLanguage }) }),
+      fetchDailyMoods(currentUser.id)
+    ]);
     const data = await res.json();
     const moodEmojis = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😊' };
     const avgEmoji = moodEmojis[Math.round(parseFloat(data.avgMood))] || '😐';
     document.getElementById('summaryContent').innerHTML = `<div class="summary-content"><div class="summary-stats"><div class="stat-box"><div class="stat-value">${data.moodCount || 0}</div><div class="stat-label">${t.weekDays}</div></div><div class="stat-box"><div class="stat-value">${avgEmoji} ${data.avgMood || '—'}</div><div class="stat-label">${t.weekAvg}</div></div></div><div class="summary-text">${data.summary}</div></div>`;
     if (data.moodCount > 0) {
-      lastSummaryData = { moodCount: data.moodCount, avgMood: data.avgMood, avgEmoji, streak: currentStreak };
+      lastSummaryData = { moodCount: data.moodCount, avgMood: data.avgMood, avgEmoji, streak: currentStreak, dailyMoods };
       const shareBtn = document.getElementById('shareSummaryBtn');
       if (shareBtn) shareBtn.style.display = 'flex';
     }
   } catch (err) { document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekError}</p>`; }
+}
+
+// Pobiera nastroje z ostatnich 7 dni i grupuje je dzień po dniu (czas polski)
+async function fetchDailyMoods(userId) {
+  try {
+    const res = await fetch(`/api/mood?userId=${userId}`);
+    const data = await res.json();
+    const moods = data.moods || [];
+    const byDay = {};
+    moods.forEach(m => {
+      const key = new Date(m.created_at).toLocaleDateString('en-CA', { timeZone: 'Europe/Warsaw' });
+      (byDay[key] = byDay[key] || []).push(m.mood);
+    });
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toLocaleDateString('en-CA', { timeZone: 'Europe/Warsaw' });
+      const dayMoods = byDay[key];
+      const avg = dayMoods && dayMoods.length ? Math.round(dayMoods.reduce((a, b) => a + b, 0) / dayMoods.length) : null;
+      days.push({ dow: d.getDay(), mood: avg });
+    }
+    return days;
+  } catch (err) { console.error(err); return []; }
 }
 function closeSummary() { document.getElementById('summaryOverlay').classList.remove('visible'); }
 
@@ -1131,6 +1158,54 @@ async function shareWeekSummary() {
     ctx.font = '700 44px Lato, sans-serif';
     ctx.fillStyle = '#ff6b35';
     ctx.fillText(`🔥 ${lastSummaryData.streak} ${texts.streak}`, W / 2, statY + 60);
+  }
+
+  // Pasek dzień po dniu
+  if (lastSummaryData.dailyMoods && lastSummaryData.dailyMoods.length === 7) {
+    const dayAbbrevs = {
+      pl: ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'],
+      en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+      uk: ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+      de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+      es: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa']
+    };
+    const dayByDayLabel = { pl: 'Dzień po dniu', en: 'Day by day', uk: 'День за днем', de: 'Tag für Tag', es: 'Día a día' };
+    const dowLabels = dayAbbrevs[currentLanguage] || dayAbbrevs.pl;
+    const dayMoodEmojis = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😊' };
+
+    ctx.fillStyle = '#9e8e83';
+    ctx.font = '700 30px Lato, sans-serif';
+    ctx.fillText((dayByDayLabel[currentLanguage] || dayByDayLabel.pl).toUpperCase(), W / 2, 1300);
+
+    const dotSize = 78, gap = 24;
+    const totalWidth = 7 * dotSize + 6 * gap;
+    const startX = (W - totalWidth) / 2 + dotSize / 2;
+    const dotsY = 1420;
+
+    lastSummaryData.dailyMoods.forEach((day, i) => {
+      const cx = startX + i * (dotSize + gap);
+      ctx.beginPath();
+      ctx.arc(cx, dotsY, dotSize / 2, 0, Math.PI * 2);
+      if (day.mood) {
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.fill();
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(58,46,40,0.18)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      if (day.mood) {
+        ctx.font = '42px sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(dayMoodEmojis[day.mood] || '😐', cx, dotsY + 3);
+        ctx.textBaseline = 'alphabetic';
+      }
+      ctx.fillStyle = '#3a2e28';
+      ctx.font = '400 28px Lato, sans-serif';
+      ctx.fillText(dowLabels[day.dow], cx, dotsY + dotSize / 2 + 46);
+    });
   }
 
   // Stopka

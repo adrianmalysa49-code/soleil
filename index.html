@@ -159,6 +159,9 @@
   .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
   .stat-label { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
   .summary-text { font-size: 0.86rem; color: var(--text); line-height: 1.6; }
+  .summary-actions { display: flex; gap: 8px; }
+  .summary-actions .popup-btn { flex: 1; }
+  .share-btn { background: linear-gradient(135deg, var(--accent3), #5dbfb7); box-shadow: 0 4px 16px rgba(125,189,181,0.3); display: flex; align-items: center; justify-content: center; gap: 6px; }
 
   /* User menu */
   .user-menu { display: none; position: fixed; top: 64px; right: 14px; background: white; border-radius: 14px; padding: 8px; box-shadow: 0 8px 32px var(--shadow); border: 1px solid rgba(232,132,90,0.12); z-index: 200; min-width: 200px; animation: slideUp 0.2s ease; }
@@ -265,7 +268,10 @@
     <button class="popup-close" onclick="closeSummary()">✕</button>
     <h2>Twój tydzień 📊</h2>
     <div id="summaryContent"><p style="color:var(--muted);text-align:center;padding:20px 0">Ładowanie...</p></div>
-    <button class="popup-btn" onclick="closeSummary()">Zamknij</button>
+    <div class="summary-actions">
+      <button class="popup-btn share-btn" id="shareSummaryBtn" onclick="shareWeekSummary()" style="display:none">📤 <span id="shareBtnLabel">Udostępnij</span></button>
+      <button class="popup-btn" onclick="closeSummary()" id="closeSummaryBtn2">Zamknij</button>
+    </div>
   </div>
 </div>
 
@@ -428,6 +434,8 @@ let currentUser = null;
 let selectedMood = null;
 let currentConversationId = null;
 let userIsPremium = false;
+let currentStreak = 0;
+let lastSummaryData = null;
 let currentLanguage = localStorage.getItem('soleil_language') || 'pl';
 const langFlags = { pl: '🇵🇱', en: '🇬🇧', uk: '🇺🇦', de: '🇩🇪', es: '🇪🇸' };
 
@@ -942,6 +950,7 @@ async function loadStreak(userId) {
     const res = await fetch(`/api/streak?userId=${userId}`);
     const data = await res.json();
     const badge = document.getElementById('streakBadge');
+    currentStreak = data.streak || 0;
     if (data.streak > 0) { badge.textContent = `🔥 ${data.streak}`; badge.style.display = 'block'; }
     else { badge.style.display = 'none'; }
   } catch (err) { console.error(err); }
@@ -1010,15 +1019,154 @@ async function openSummary() {
   pushOverlayState('summaryOverlay');
   document.getElementById('summaryOverlay').classList.add('visible');
   document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekLoading}</p>`;
+  document.getElementById('shareSummaryBtn').style.display = 'none';
+  const shareLabels = { pl: 'Udostępnij', en: 'Share', uk: 'Поділитися', de: 'Teilen', es: 'Compartir' };
+  document.getElementById('shareBtnLabel').textContent = shareLabels[currentLanguage] || shareLabels.pl;
   try {
     const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, language: currentLanguage }) });
     const data = await res.json();
     const moodEmojis = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😊' };
     const avgEmoji = moodEmojis[Math.round(parseFloat(data.avgMood))] || '😐';
     document.getElementById('summaryContent').innerHTML = `<div class="summary-content"><div class="summary-stats"><div class="stat-box"><div class="stat-value">${data.moodCount || 0}</div><div class="stat-label">${t.weekDays}</div></div><div class="stat-box"><div class="stat-value">${avgEmoji} ${data.avgMood || '—'}</div><div class="stat-label">${t.weekAvg}</div></div></div><div class="summary-text">${data.summary}</div></div>`;
+    if (data.moodCount > 0) {
+      lastSummaryData = { moodCount: data.moodCount, avgMood: data.avgMood, avgEmoji, streak: currentStreak };
+      document.getElementById('shareSummaryBtn').style.display = 'flex';
+    }
   } catch (err) { document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekError}</p>`; }
 }
 function closeSummary() { document.getElementById('summaryOverlay').classList.remove('visible'); }
+
+// KARTA DO UDOSTĘPNIENIA
+const shareCardTexts = {
+  pl: { title: 'Mój tydzień z Soleil', days: 'dni z zapisanym nastrojem', avg: 'średni nastrój', streak: 'dni passy', cta: 'Twój przyjaciel AI, zawsze pod ręką', fileName: 'soleil-moj-tydzien.png' },
+  en: { title: 'My week with Soleil', days: 'days with tracked mood', avg: 'average mood', streak: 'day streak', cta: 'Your AI friend, always there', fileName: 'soleil-my-week.png' },
+  uk: { title: 'Мій тиждень із Soleil', days: 'днів із записаним настроєм', avg: 'середній настрій', streak: 'днів поспіль', cta: 'Твій AI-друг завжди поруч', fileName: 'soleil-tyzhden.png' },
+  de: { title: 'Meine Woche mit Soleil', days: 'Tage mit Stimmung', avg: 'Durchschnittsstimmung', streak: 'Tage in Folge', cta: 'Dein KI-Freund, immer da', fileName: 'soleil-meine-woche.png' },
+  es: { title: 'Mi semana con Soleil', days: 'días con estado de ánimo', avg: 'estado de ánimo promedio', streak: 'días seguidos', cta: 'Tu amigo IA, siempre presente', fileName: 'soleil-mi-semana.png' }
+};
+
+function drawRoundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+async function shareWeekSummary() {
+  if (!lastSummaryData) return;
+  const texts = shareCardTexts[currentLanguage] || shareCardTexts.pl;
+  const W = 1080, H = 1920;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Tło
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#fdf6ee');
+  bg.addColorStop(1, '#fbe7d8');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow1 = ctx.createRadialGradient(W * 0.2, H * 0.12, 0, W * 0.2, H * 0.12, 700);
+  glow1.addColorStop(0, 'rgba(242,180,138,0.45)');
+  glow1.addColorStop(1, 'rgba(242,180,138,0)');
+  ctx.fillStyle = glow1; ctx.fillRect(0, 0, W, H);
+
+  const glow2 = ctx.createRadialGradient(W * 0.85, H * 0.85, 0, W * 0.85, H * 0.85, 650);
+  glow2.addColorStop(0, 'rgba(125,189,181,0.35)');
+  glow2.addColorStop(1, 'rgba(125,189,181,0)');
+  ctx.fillStyle = glow2; ctx.fillRect(0, 0, W, H);
+
+  // Logo + nazwa
+  try {
+    const logo = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = 'logosoleil.png';
+    });
+    ctx.drawImage(logo, W / 2 - 70, 100, 140, 140);
+  } catch (e) { /* logo opcjonalne */ }
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#e8845a';
+  ctx.font = '700 56px "Playfair Display", serif';
+  ctx.fillText('Soleil', W / 2, 320);
+
+  ctx.fillStyle = '#3a2e28';
+  ctx.font = '600 46px "Playfair Display", serif';
+  wrapCanvasText(ctx, texts.title, W / 2, 400, W - 160, 56);
+
+  // Karta statystyk
+  const cardY = 520, cardH = 620;
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  drawRoundedRect(ctx, 90, cardY, W - 180, cardH, 40);
+  ctx.fill();
+
+  // Duży emoji nastroju
+  ctx.font = '160px sans-serif';
+  ctx.fillText(lastSummaryData.avgEmoji || '😐', W / 2, cardY + 220);
+
+  ctx.fillStyle = '#e8845a';
+  ctx.font = '700 90px "Playfair Display", serif';
+  ctx.fillText(String(lastSummaryData.avgMood || '—'), W / 2, cardY + 340);
+  ctx.fillStyle = '#9e8e83';
+  ctx.font = '400 34px Lato, sans-serif';
+  ctx.fillText(texts.avg, W / 2, cardY + 390);
+
+  // Linia statystyk: dni + streak
+  ctx.font = '700 44px Lato, sans-serif';
+  ctx.fillStyle = '#3a2e28';
+  const statY = cardY + 500;
+  ctx.fillText(`${lastSummaryData.moodCount} ${texts.days}`, W / 2, statY);
+
+  if (lastSummaryData.streak > 0) {
+    ctx.font = '700 44px Lato, sans-serif';
+    ctx.fillStyle = '#ff6b35';
+    ctx.fillText(`🔥 ${lastSummaryData.streak} ${texts.streak}`, W / 2, statY + 60);
+  }
+
+  // Stopka
+  ctx.fillStyle = '#9e8e83';
+  ctx.font = '400 32px Lato, sans-serif';
+  ctx.fillText(texts.cta, W / 2, H - 140);
+  ctx.fillStyle = '#e8845a';
+  ctx.font = '700 36px Lato, sans-serif';
+  ctx.fillText(window.location.hostname || 'soleil.app', W / 2, H - 90);
+
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], texts.fileName, { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Soleil', text: texts.title });
+        return;
+      } catch (e) { /* użytkownik anulował lub brak wsparcia — pobierz plik */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = texts.fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '', lines = [];
+  for (const word of words) {
+    const testLine = line ? `${line} ${word}` : word;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      lines.push(line); line = word;
+    } else { line = testLine; }
+  }
+  lines.push(line);
+  const startY = y - ((lines.length - 1) * lineHeight) / 2;
+  lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
+}
 
 // ROZMOWY
 async function openConversations() { pushOverlayState('conversationsOverlay'); document.getElementById('conversationsOverlay').classList.add('visible'); await loadConversationsList(); }

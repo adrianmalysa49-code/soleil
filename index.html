@@ -1019,9 +1019,10 @@ async function openSummary() {
   pushOverlayState('summaryOverlay');
   document.getElementById('summaryOverlay').classList.add('visible');
   document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekLoading}</p>`;
-  document.getElementById('shareSummaryBtn').style.display = 'none';
+  document.getElementById('shareSummaryBtn')?.style && (document.getElementById('shareSummaryBtn').style.display = 'none');
   const shareLabels = { pl: 'Udostępnij', en: 'Share', uk: 'Поділитися', de: 'Teilen', es: 'Compartir' };
-  document.getElementById('shareBtnLabel').textContent = shareLabels[currentLanguage] || shareLabels.pl;
+  const shareBtnLabelEl = document.getElementById('shareBtnLabel');
+  if (shareBtnLabelEl) shareBtnLabelEl.textContent = shareLabels[currentLanguage] || shareLabels.pl;
   try {
     const res = await fetch('/api/summary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, language: currentLanguage }) });
     const data = await res.json();
@@ -1030,7 +1031,8 @@ async function openSummary() {
     document.getElementById('summaryContent').innerHTML = `<div class="summary-content"><div class="summary-stats"><div class="stat-box"><div class="stat-value">${data.moodCount || 0}</div><div class="stat-label">${t.weekDays}</div></div><div class="stat-box"><div class="stat-value">${avgEmoji} ${data.avgMood || '—'}</div><div class="stat-label">${t.weekAvg}</div></div></div><div class="summary-text">${data.summary}</div></div>`;
     if (data.moodCount > 0) {
       lastSummaryData = { moodCount: data.moodCount, avgMood: data.avgMood, avgEmoji, streak: currentStreak };
-      document.getElementById('shareSummaryBtn').style.display = 'flex';
+      const shareBtn = document.getElementById('shareSummaryBtn');
+      if (shareBtn) shareBtn.style.display = 'flex';
     }
   } catch (err) { document.getElementById('summaryContent').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0">${t.weekError}</p>`; }
 }

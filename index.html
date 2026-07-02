@@ -736,7 +736,8 @@ function updateInterfaceLanguage(lang) {
   document.getElementById('moodNote').placeholder = t.moodNote;
   // Tydzień popup
   document.querySelector('#summaryOverlay h2').textContent = t.weekTitle;
-  document.querySelector('#summaryOverlay .popup-btn').textContent = t.weekClose;
+  const closeSummaryBtnEl = document.getElementById('closeSummaryBtn2');
+  if (closeSummaryBtnEl) closeSummaryBtnEl.textContent = t.weekClose;
   // Premium popup
   document.querySelector('.premium-header h2').textContent = t.premiumTitle;
   document.querySelector('.premium-header p').textContent = t.premiumSubtitle;

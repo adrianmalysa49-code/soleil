@@ -32,8 +32,10 @@ export default async function handler(req, res) {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: 'Brak userId' });
 
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const nowDate = new Date();
+    const polandOffset = nowDate.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' });
+    const today = new Date(polandOffset).toISOString().split('T')[0];
+    const yesterday = new Date(new Date(polandOffset).getTime() - 86400000).toISOString().split('T')[0];
 
     // Pobierz obecne statystyki
     const statsRes = await fetch(

@@ -182,7 +182,7 @@
   .chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 8px 2px 14px; scroll-behavior: smooth; }
   .chat-window::-webkit-scrollbar { width: 4px; }
   .chat-window::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
-  .welcome { text-align: center; padding: 20px 16px; animation: fadeSlideIn 0.7s ease both; margin: auto 0; width: 100%; }
+  .welcome { text-align: center; padding: 20px 16px; animation: fadeSlideIn 0.7s ease both; }
   .welcome .sun { font-size: 2.6rem; display: block; margin-bottom: 10px; animation: spinSlow 20s linear infinite; }
   @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .welcome h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--accent); margin-bottom: 8px; }
@@ -229,6 +229,12 @@
   .daily-label { font-size: 0.62rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
   .daily-quote { font-family: 'Lato', sans-serif; font-size: 0.82rem; color: var(--text); line-height: 1.55; font-style: italic; margin-bottom: 3px; }
   .daily-author { font-size: 0.68rem; color: var(--muted); font-weight: 600; }
+  .quick-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .quick-action-card { flex: 1; background: white; border-radius: 14px; padding: 14px 12px; border: 1px solid rgba(232,132,90,0.12); box-shadow: 0 2px 10px var(--shadow); cursor: pointer; text-align: center; transition: transform 0.18s ease, box-shadow 0.18s ease; animation: fadeSlideIn 0.8s ease both; animation-delay: 0.4s; }
+  .quick-action-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px var(--shadow); }
+  .quick-action-icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .quick-action-title { font-size: 0.78rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .quick-action-desc { font-size: 0.68rem; color: var(--muted); line-height: 1.3; }
   .daily-loading { text-align: center; padding: 8px 0; color: var(--muted); font-size: 0.78rem; }
   #clerk-sign-in { min-height: 200px; }
   * { scrollbar-width: thin; scrollbar-color: var(--accent2) transparent; }
@@ -426,6 +432,20 @@
             <div class="daily-quote" id="dailyQuote"></div>
             <div class="daily-author" id="dailyAuthor"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- Szybkie akcje -->
+      <div class="quick-actions" id="quickActions" style="display:none">
+        <div class="quick-action-card" onclick="openSummary()">
+          <div class="quick-action-icon">📊</div>
+          <div class="quick-action-title" id="qaWeekTitle">Twój tydzień</div>
+          <div class="quick-action-desc" id="qaWeekDesc">Zobacz jak Ci minął</div>
+        </div>
+        <div class="quick-action-card" onclick="openReferral()">
+          <div class="quick-action-icon">🎁</div>
+          <div class="quick-action-title" id="qaReferralTitle">Poleć znajomym</div>
+          <div class="quick-action-desc" id="qaReferralDesc">7 dni Premium gratis</div>
         </div>
       </div>
     </div>
@@ -757,6 +777,13 @@ function updateInterfaceLanguage(lang) {
   document.querySelector('#summaryOverlay h2').textContent = t.weekTitle;
   const closeSummaryBtnEl = document.getElementById('closeSummaryBtn2');
   if (closeSummaryBtnEl) closeSummaryBtnEl.textContent = t.weekClose;
+  // Kafelki szybkich akcji
+  const qaWeek = { pl: ['Twój tydzień', 'Zobacz jak Ci minął'], en: ['Your week', 'See how it went'], uk: ['Твій тиждень', 'Подивись, як минув'], de: ['Deine Woche', 'Sieh, wie sie war'], es: ['Tu semana', 'Mira cómo fue'] };
+  const qaReferral = { pl: ['Poleć znajomym', '7 dni Premium gratis'], en: ['Refer a friend', '7 days Premium free'], uk: ['Запроси друга', '7 днів Premium безкоштовно'], de: ['Freund einladen', '7 Tage Premium gratis'], es: ['Invita a un amigo', '7 días Premium gratis'] };
+  if (document.getElementById('qaWeekTitle')) document.getElementById('qaWeekTitle').textContent = (qaWeek[lang] || qaWeek.pl)[0];
+  if (document.getElementById('qaWeekDesc')) document.getElementById('qaWeekDesc').textContent = (qaWeek[lang] || qaWeek.pl)[1];
+  if (document.getElementById('qaReferralTitle')) document.getElementById('qaReferralTitle').textContent = (qaReferral[lang] || qaReferral.pl)[0];
+  if (document.getElementById('qaReferralDesc')) document.getElementById('qaReferralDesc').textContent = (qaReferral[lang] || qaReferral.pl)[1];
   // Referral popup
   const refTitles = { pl: 'Poleć znajomym 🎁', en: 'Refer a friend 🎁', uk: 'Запроси друга 🎁', de: 'Freund einladen 🎁', es: 'Invita a un amigo 🎁' };
   const refSubtitles = {
@@ -893,10 +920,12 @@ function updateAuthUI(user) {
   const userAvatar = document.getElementById('userAvatar');
   const convBtn = document.getElementById('conversationsBtn');
   const badge = document.getElementById('streakBadge');
+  const quickActions = document.getElementById('quickActions');
   if (user) {
     loginBtn.style.display = 'none';
     userAvatar.classList.add('visible');
     convBtn.classList.add('visible');
+    if (quickActions) quickActions.style.display = 'flex';
     const initials = (user.firstName?.[0] || user.emailAddresses?.[0]?.emailAddress?.[0] || '?').toUpperCase();
     userAvatar.textContent = initials;
     document.getElementById('userName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Użytkownik';
@@ -907,6 +936,7 @@ function updateAuthUI(user) {
     loginBtn.style.display = 'block';
     userAvatar.classList.remove('visible');
     convBtn.classList.remove('visible');
+    if (quickActions) quickActions.style.display = 'none';
     badge.style.display = 'none';
     document.getElementById('premiumBadge').style.display = 'none';
   }

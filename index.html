@@ -162,6 +162,10 @@
   .summary-actions { display: flex; gap: 8px; }
   .summary-actions .popup-btn { flex: 1; }
   .share-btn { background: linear-gradient(135deg, var(--accent3), #5dbfb7); box-shadow: 0 4px 16px rgba(125,189,181,0.3); display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .referral-link-box { display: flex; gap: 8px; align-items: center; background: rgba(232,132,90,0.06); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; }
+  .referral-link-text { flex: 1; font-size: 0.78rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; }
+  .referral-copy-btn { border: none; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+  .referral-stats { display: flex; gap: 10px; margin-bottom: 4px; }
 
   /* User menu */
   .user-menu { display: none; position: fixed; top: 64px; right: 14px; background: white; border-radius: 14px; padding: 8px; box-shadow: 0 8px 32px var(--shadow); border: 1px solid rgba(232,132,90,0.12); z-index: 200; min-width: 200px; animation: slideUp 0.2s ease; }
@@ -275,6 +279,20 @@
   </div>
 </div>
 
+<!-- Popup referral -->
+<div class="overlay" id="referralOverlay">
+  <div class="popup">
+    <button class="popup-close" onclick="closeReferral()">✕</button>
+    <h2 id="referralTitle">Poleć znajomym 🎁</h2>
+    <p id="referralSubtitle" style="color:var(--muted);font-size:0.85rem;line-height:1.5;margin-bottom:16px">Zaproś znajomego — kiedy zapisze swój pierwszy nastrój, oboje dostajecie 7 dni Premium gratis.</p>
+    <div id="referralContent"><p style="color:var(--muted);text-align:center;padding:20px 0">Ładowanie...</p></div>
+    <div class="summary-actions">
+      <button class="popup-btn share-btn" id="shareReferralBtn" onclick="shareReferralLink()">📤 <span id="shareReferralLabel">Udostępnij link</span></button>
+      <button class="popup-btn" onclick="closeReferral()" id="closeReferralBtn">Zamknij</button>
+    </div>
+  </div>
+</div>
+
 <!-- Popup rozmów -->
 <div class="overlay" id="conversationsOverlay">
   <div class="conversations-popup">
@@ -361,6 +379,7 @@
   <button class="user-menu-btn" onclick="openLanguage(); toggleUserMenu()">🌍 <span id="menuLangLabel">Język</span> <span id="menuLangFlag">🇵🇱</span></button>
   <button class="user-menu-btn" id="pushMenuBtn" onclick="document.getElementById('userMenu').classList.remove('visible'); setTimeout(togglePushNotifications, 400)">🔔 <span id="menuPushLabel">Włącz powiadomienia</span></button>
   <button class="user-menu-btn premium-menu" id="premiumMenuBtn" onclick="openPremium()" style="display:none">✨ <span id="menuPremiumLabel">Przejdź na Premium</span></button>
+  <button class="user-menu-btn" onclick="openReferral(); toggleUserMenu()">🎁 <span id="menuReferralLabel">Poleć znajomym</span></button>
   <div style="height:1px;background:rgba(232,132,90,0.1);margin:4px 0;"></div>
   <button class="user-menu-btn danger" onclick="signOut()">🚪 <span id="menuSignOutLabel">Wyloguj się</span></button>
 </div>
@@ -738,6 +757,23 @@ function updateInterfaceLanguage(lang) {
   document.querySelector('#summaryOverlay h2').textContent = t.weekTitle;
   const closeSummaryBtnEl = document.getElementById('closeSummaryBtn2');
   if (closeSummaryBtnEl) closeSummaryBtnEl.textContent = t.weekClose;
+  // Referral popup
+  const refTitles = { pl: 'Poleć znajomym 🎁', en: 'Refer a friend 🎁', uk: 'Запроси друга 🎁', de: 'Freund einladen 🎁', es: 'Invita a un amigo 🎁' };
+  const refSubtitles = {
+    pl: 'Zaproś znajomego — kiedy zapisze swój pierwszy nastrój, oboje dostajecie 7 dni Premium gratis.',
+    en: 'Invite a friend — once they log their first mood, you both get 7 days of Premium for free.',
+    uk: 'Запроси друга — коли він запише свій перший настрій, ви обидва отримаєте 7 днів Premium безкоштовно.',
+    de: 'Lade einen Freund ein — sobald er seine erste Stimmung einträgt, bekommt ihr beide 7 Tage Premium gratis.',
+    es: 'Invita a un amigo — cuando registre su primer estado de ánimo, ambos reciben 7 días de Premium gratis.'
+  };
+  const refShareBtn = { pl: 'Udostępnij link', en: 'Share link', uk: 'Поділитися посиланням', de: 'Link teilen', es: 'Compartir enlace' };
+  const refCloseBtn = { pl: 'Zamknij', en: 'Close', uk: 'Закрити', de: 'Schließen', es: 'Cerrar' };
+  const refCopyBtn = { pl: 'Kopiuj', en: 'Copy', uk: 'Копіювати', de: 'Kopieren', es: 'Copiar' };
+  if (document.getElementById('referralTitle')) document.getElementById('referralTitle').textContent = refTitles[lang] || refTitles.pl;
+  if (document.getElementById('referralSubtitle')) document.getElementById('referralSubtitle').textContent = refSubtitles[lang] || refSubtitles.pl;
+  if (document.getElementById('shareReferralLabel')) document.getElementById('shareReferralLabel').textContent = refShareBtn[lang] || refShareBtn.pl;
+  if (document.getElementById('closeReferralBtn')) document.getElementById('closeReferralBtn').textContent = refCloseBtn[lang] || refCloseBtn.pl;
+  if (document.getElementById('referralCopyBtnLabel')) document.getElementById('referralCopyBtnLabel').textContent = refCopyBtn[lang] || refCopyBtn.pl;
   // Premium popup
   document.querySelector('.premium-header h2').textContent = t.premiumTitle;
   document.querySelector('.premium-header p').textContent = t.premiumSubtitle;
@@ -758,18 +794,20 @@ function updateInterfaceLanguage(lang) {
   const menuPush = { pl: 'Powiadomienia', en: 'Notifications', uk: 'Сповіщення', de: 'Benachrichtigungen', es: 'Notificaciones' };
   const menuPrem = { pl: 'Przejdź na Premium', en: 'Go Premium', uk: 'Перейти на Premium', de: 'Zu Premium', es: 'Ir a Premium' };
   const menuOut = { pl: 'Wyloguj się', en: 'Sign out', uk: 'Вийти', de: 'Abmelden', es: 'Cerrar sesión' };
+  const menuRef = { pl: 'Poleć znajomym', en: 'Refer a friend', uk: 'Запросити друга', de: 'Freund einladen', es: 'Invita a un amigo' };
   if (document.getElementById('menuWeekLabel')) document.getElementById('menuWeekLabel').textContent = menuWeek[lang] || menuWeek.pl;
   if (document.getElementById('menuLangLabel')) document.getElementById('menuLangLabel').textContent = menuLang[lang] || menuLang.pl;
   if (document.getElementById('menuLangFlag')) document.getElementById('menuLangFlag').textContent = langFlags[lang] || '🌍';
   if (document.getElementById('menuPushLabel')) document.getElementById('menuPushLabel').textContent = menuPush[lang] || menuPush.pl;
   if (document.getElementById('menuPremiumLabel')) document.getElementById('menuPremiumLabel').textContent = menuPrem[lang] || menuPrem.pl;
   if (document.getElementById('menuSignOutLabel')) document.getElementById('menuSignOutLabel').textContent = menuOut[lang] || menuOut.pl;
+  if (document.getElementById('menuReferralLabel')) document.getElementById('menuReferralLabel').textContent = menuRef[lang] || menuRef.pl;
 }
 
 // History API
 function pushOverlayState(id) { history.pushState({ overlay: id }, ''); }
 window.addEventListener('popstate', () => {
-  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay'].forEach(id => {
+  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay'].forEach(id => {
     document.getElementById(id).classList.remove('visible');
   });
   document.getElementById('userMenu').classList.remove('visible');
@@ -783,10 +821,10 @@ async function initClerk() {
     clerk.addListener(({ user }) => {
       currentUser = user;
       updateAuthUI(user);
-      if (user) { closeAuth(); checkDailyMood(); loadSubscription(user.id); }
+      if (user) { closeAuth(); checkDailyMood(); loadSubscription(user.id); registerPendingReferral(user.id); }
     });
     updateAuthUI(clerk.user);
-    if (clerk.user) { checkDailyMood(); loadSubscription(clerk.user.id); }
+    if (clerk.user) { checkDailyMood(); loadSubscription(clerk.user.id); registerPendingReferral(clerk.user.id); }
 
     // Sprawdź czy wrócił po płatności
     const params = new URLSearchParams(window.location.search);
@@ -794,7 +832,31 @@ async function initClerk() {
       history.replaceState({}, '', '/');
       setTimeout(() => showSuccessMessage(), 1000);
     }
+    // Zapamiętaj kod polecającego z linku (?ref=...), zanim usuniemy go z URL
+    const refCode = params.get('ref');
+    if (refCode) {
+      localStorage.setItem('soleil_pending_ref', refCode);
+      params.delete('ref');
+      const cleanUrl = window.location.pathname + (params.toString() ? `?${params}` : '');
+      history.replaceState({}, '', cleanUrl);
+    }
   } catch (err) { console.error('Clerk error:', err); }
+}
+
+// Rejestruje polecenie, jeśli użytkownik przyszedł z linku poleconego i jeszcze go nie zarejestrowaliśmy
+async function registerPendingReferral(userId) {
+  try {
+    const pendingRef = localStorage.getItem('soleil_pending_ref');
+    const alreadySent = localStorage.getItem('soleil_ref_sent_' + userId);
+    if (!pendingRef || alreadySent || pendingRef === userId) return;
+    await fetch('/api/referral', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referrerId: pendingRef, referredId: userId })
+    });
+    localStorage.setItem('soleil_ref_sent_' + userId, '1');
+    localStorage.removeItem('soleil_pending_ref');
+  } catch (err) { console.error('Referral registration error:', err); }
 }
 
 async function loadSubscription(userId) {
@@ -945,10 +1007,15 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-// STREAK
+// STREAK — rejestruje dzisiejsze otwarcie appki i pokazuje aktualny streak.
+// POST /api/streak jest bezpieczny do wołania wielokrotnie tego samego dnia (jeśli last_streak_date === dziś, nic nie zmienia).
 async function loadStreak(userId) {
   try {
-    const res = await fetch(`/api/streak?userId=${userId}`);
+    const res = await fetch('/api/streak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
     const data = await res.json();
     const badge = document.getElementById('streakBadge');
     currentStreak = data.streak || 0;
@@ -996,7 +1063,6 @@ async function saveMood() {
       body: JSON.stringify({ userId: currentUser.id, mood: selectedMood, note })
     });
     const data = await res.json();
-    if (data.streak) loadStreak(currentUser.id);
     closeMood();
     const moodMessages = {
       1: 'Widzę że dziś jest ciężko. Jestem tu — powiedz mi co się dzieje.',
@@ -1065,6 +1131,67 @@ async function fetchDailyMoods(userId) {
   } catch (err) { console.error(err); return []; }
 }
 function closeSummary() { document.getElementById('summaryOverlay').classList.remove('visible'); }
+
+let currentReferralLink = '';
+
+async function openReferral() {
+  if (!currentUser) return;
+  pushOverlayState('referralOverlay');
+  document.getElementById('referralOverlay').classList.add('visible');
+  document.getElementById('referralContent').innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px 0">Ładowanie...</p>';
+  currentReferralLink = `${window.location.origin}/?ref=${currentUser.id}`;
+  try {
+    const res = await fetch(`/api/referral?userId=${currentUser.id}`);
+    const data = await res.json();
+    const statsLabels = { pl: ['poleconych', 'dni Premium zdobyte'], en: ['referred', 'Premium days earned'], uk: ['запрошено', 'днів Premium отримано'], de: ['geworben', 'Premium-Tage erhalten'], es: ['referidos', 'días Premium ganados'] };
+    const labels = statsLabels[currentLanguage] || statsLabels.pl;
+    document.getElementById('referralContent').innerHTML = `
+      <div class="referral-link-box">
+        <div class="referral-link-text">${currentReferralLink}</div>
+        <button class="referral-copy-btn" onclick="copyReferralLink()" id="referralCopyBtnLabel">Kopiuj</button>
+      </div>
+      <div class="referral-stats">
+        <div class="stat-box"><div class="stat-value">${data.rewardedCount || 0}</div><div class="stat-label">${labels[0]}</div></div>
+        <div class="stat-box"><div class="stat-value">${(data.rewardedCount || 0) * (data.rewardDays || 7)}</div><div class="stat-label">${labels[1]}</div></div>
+      </div>`;
+  } catch (err) {
+    document.getElementById('referralContent').innerHTML = `
+      <div class="referral-link-box">
+        <div class="referral-link-text">${currentReferralLink}</div>
+        <button class="referral-copy-btn" onclick="copyReferralLink()" id="referralCopyBtnLabel">Kopiuj</button>
+      </div>`;
+  }
+}
+
+function closeReferral() { document.getElementById('referralOverlay').classList.remove('visible'); }
+
+function copyReferralLink() {
+  if (!currentReferralLink) return;
+  navigator.clipboard.writeText(currentReferralLink).then(() => {
+    const btn = document.getElementById('referralCopyBtnLabel');
+    if (!btn) return;
+    const copiedLabels = { pl: 'Skopiowano ✓', en: 'Copied ✓', uk: 'Скопійовано ✓', de: 'Kopiert ✓', es: 'Copiado ✓' };
+    const original = btn.textContent;
+    btn.textContent = copiedLabels[currentLanguage] || copiedLabels.pl;
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  }).catch(() => {});
+}
+
+async function shareReferralLink() {
+  if (!currentReferralLink) return;
+  const shareTexts = {
+    pl: 'Odkryłam/em Soleil — appkę, która pomaga mi dbać o nastrój każdego dnia. Dołącz, a oboje dostaniemy 7 dni Premium gratis 🎁',
+    en: 'I found Soleil — an app that helps me look after my mood every day. Join and we both get 7 days of Premium free 🎁',
+    uk: 'Я знайшов/ла Soleil — застосунок, який допомагає стежити за настроєм щодня. Приєднуйся, і ми обоє отримаємо 7 днів Premium безкоштовно 🎁',
+    de: 'Ich hab Soleil entdeckt — eine App, die mir hilft, jeden Tag auf meine Stimmung zu achten. Mach mit, dann bekommen wir beide 7 Tage Premium gratis 🎁',
+    es: 'Descubrí Soleil, una app que me ayuda a cuidar mi estado de ánimo cada día. Únete y ambos recibimos 7 días de Premium gratis 🎁'
+  };
+  const text = shareTexts[currentLanguage] || shareTexts.pl;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Soleil', text, url: currentReferralLink }); return; } catch (e) { /* anulowano */ }
+  }
+  copyReferralLink();
+}
 
 // KARTA DO UDOSTĘPNIENIA
 const shareCardTexts = {
@@ -1309,7 +1436,7 @@ function startNewChat() {
 }
 
 // Zamknij po kliknięciu tła
-['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay'].forEach(id => {
+['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay'].forEach(id => {
   document.getElementById(id).addEventListener('click', (e) => { if (e.target.id === id) document.getElementById(id).classList.remove('visible'); });
 });
 document.addEventListener('click', (e) => {

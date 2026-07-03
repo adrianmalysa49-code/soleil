@@ -1056,10 +1056,12 @@ async function loadStreak(userId) {
 
 // NASTRÓJ
 async function checkDailyMood() {
-  if (!currentUser) return;
+  if (!currentUser || !currentUser.id) { console.warn('checkDailyMood: brak currentUser.id, pomijam'); return; }
   try {
     const res = await fetch(`/api/mood?userId=${currentUser.id}&today=true`);
+    if (!res.ok) { console.error('checkDailyMood: odpowiedź API nie OK', res.status); return; }
     const data = await res.json();
+    console.log('checkDailyMood:', data);
     if (!data.hasMoodToday) {
       setTimeout(() => {
         pushOverlayState('moodOverlay');

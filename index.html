@@ -237,7 +237,9 @@
   .quick-action-desc { font-size: 0.68rem; color: var(--muted); line-height: 1.3; }
 
   /* Zwierzak nastroju */
-  .pet-card { background: white; border-radius: 20px; padding: 20px 16px 16px; margin-top: 14px; text-align: center; box-shadow: 0 4px 16px var(--shadow); animation: fadeSlideIn 0.8s ease both; animation-delay: 0.4s; }
+  .pet-card { background: white; border-radius: 20px; padding: 20px 16px 16px; margin-top: 14px; text-align: center; box-shadow: 0 4px 16px var(--shadow); animation: fadeSlideIn 0.8s ease both; animation-delay: 0.4s; position: relative; }
+  .pet-unlock-toast { position: absolute; top: -14px; left: 50%; transform: translateX(-50%) translateY(-10px); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 0.8rem; font-weight: 700; padding: 8px 16px; border-radius: 20px; box-shadow: 0 6px 16px rgba(232,132,90,0.4); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; z-index: 5; }
+  .pet-unlock-toast.visible { opacity: 1; transform: translateX(-50%) translateY(-26px); }
   .pet-stage { position: relative; display: inline-block; cursor: pointer; user-select: none; padding: 10px; }
   .pet-emoji { font-size: 4.2rem; line-height: 1; transition: transform 0.15s ease; filter: drop-shadow(0 6px 10px rgba(58,46,40,0.12)); }
   .pet-stage:active .pet-emoji { transform: scale(0.9); }
@@ -481,6 +483,7 @@
 
       <!-- Zwierzak nastroju -->
       <div class="pet-card" id="petCard" style="display:none">
+        <div class="pet-unlock-toast" id="petUnlockToast"></div>
         <div class="pet-stage" id="petStage" onclick="petTheAnimal()">
           <div class="pet-accessory" id="petAccessory"></div>
           <div class="pet-emoji" id="petEmoji">🐶</div>
@@ -1251,7 +1254,13 @@ const PET_ACCESSORIES = [
   { key: 'hat', emoji: '🎩', threshold: 0 },
   { key: 'scarf', emoji: '🧣', threshold: 5 },
   { key: 'bow', emoji: '🎀', threshold: 15 },
-  { key: 'glasses', emoji: '😎', threshold: 30 }
+  { key: 'glasses', emoji: '😎', threshold: 30 },
+  { key: 'crown', emoji: '👑', threshold: 45 },
+  { key: 'cap', emoji: '🧢', threshold: 60 },
+  { key: 'flower', emoji: '🌸', threshold: 80 },
+  { key: 'graduation', emoji: '🎓', threshold: 100 },
+  { key: 'diamond', emoji: '💎', threshold: 130 },
+  { key: 'butterfly', emoji: '🦋', threshold: 160 }
 ];
 let petState = null;
 
@@ -1330,7 +1339,87 @@ async function petTheAnimal() {
     petState.affection = data.affection;
     petState.unlocked = data.unlocked;
     renderPetCard();
+
+    // Dźwięk co 10 głaskań
+    if (data.affection % 10 === 0) {
+      if (petState.species === 'cat') playPurr(); else playBark();
+    }
+
+    // Toast przy odblokowaniu nowego dodatku
+    if (data.newlyUnlocked && data.newlyUnlocked.length > 0) {
+      const emoji = PET_ACCESSORIES.find(a => a.key === data.newlyUnlocked[0])?.emoji || '🎁';
+      showUnlockToast(emoji);
+    }
   } catch (err) { console.error('Błąd głaskania:', err); }
+}
+
+// Toast informujący o odblokowaniu nowego dodatku
+let unlockToastTimeout = null;
+function showUnlockToast(emoji) {
+  const unlockLabels = { pl: 'Odblokowano nowy dodatek!', en: 'New item unlocked!', uk: 'Розблоковано новий предмет!', de: 'Neues Zubehör freigeschaltet!', es: '¡Nuevo accesorio desbloqueado!' };
+  const toast = document.getElementById('petUnlockToast');
+  toast.textContent = `${emoji} ${unlockLabels[currentLanguage] || unlockLabels.pl}`;
+  toast.classList.add('visible');
+  clearTimeout(unlockToastTimeout);
+  unlockToastTimeout = setTimeout(() => toast.classList.remove('visible'), 2600);
+}
+
+// Dźwięki zwierzaka — syntezowane przez Web Audio API (bez plików audio, działa offline)
+let petAudioCtx = null;
+function getPetAudioCtx() {
+  if (!petAudioCtx) petAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (petAudioCtx.state === 'suspended') petAudioCtx.resume();
+  return petAudioCtx;
+}
+
+function playBark() {
+  try {
+    const ctx = getPetAudioCtx();
+    const now = ctx.currentTime;
+    [0, 0.16].forEach(offset => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, now + offset);
+      osc.frequency.exponentialRampToValueAtTime(130, now + offset + 0.13);
+      gain.gain.setValueAtTime(0.0001, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.22, now + offset + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.16);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now + offset);
+      osc.stop(now + offset + 0.18);
+    });
+  } catch (err) { console.error('Błąd dźwięku:', err); }
+}
+
+function playPurr() {
+  try {
+    const ctx = getPetAudioCtx();
+    const now = ctx.currentTime;
+    const duration = 1.0;
+
+    const carrier = ctx.createOscillator();
+    carrier.type = 'sine';
+    carrier.frequency.setValueAtTime(72, now);
+
+    const carrierGain = ctx.createGain();
+    carrierGain.gain.setValueAtTime(0.0001, now);
+    carrierGain.gain.exponentialRampToValueAtTime(0.16, now + 0.15);
+    carrierGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(26, now);
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.setValueAtTime(0.08, now);
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(carrierGain.gain);
+    carrier.connect(carrierGain).connect(ctx.destination);
+
+    carrier.start(now); lfo.start(now);
+    carrier.stop(now + duration); lfo.stop(now + duration);
+  } catch (err) { console.error('Błąd dźwięku:', err); }
 }
 
 async function toggleAccessory(key) {

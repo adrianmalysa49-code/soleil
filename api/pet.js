@@ -1,5 +1,12 @@
 // Progi odblokowania dodatków (liczba głaskań) — wspólne źródło prawdy z frontendem (index.html)
-const ACCESSORY_THRESHOLDS = { hat: 0, scarf: 5, bow: 15, glasses: 30, crown: 45, cap: 60, flower: 80, graduation: 100, diamond: 130, butterfly: 160 };
+const ACCESSORY_THRESHOLDS = {
+  hat: 0, scarf: 5, bow: 15, glasses: 30, crown: 45, cap: 60, flower: 80, graduation: 100, star: 130, butterfly: 160,
+  sunglasses: 175, readingglasses: 190, goggles: 205, disguise: 220, helmet: 235, militaryhelmet: 250,
+  hibiscus: 265, sunflower: 280, blossom: 295, wiltedflower: 310, rose: 325, lotus: 340, hyacinth: 355, whiteflower: 370,
+  sparkles: 385, starclassic: 400, dizzy: 415, pumpkin: 430, bee: 445, ladybug: 460, leaf: 475, mapleleaf: 490,
+  clover: 505, snowflake: 520, rainbow: 535, sun: 550, moon: 565, planet: 580, dove: 595, swan: 610, bird: 625,
+  owl: 640, ribbon: 655, mushroom: 670, shell: 685, seedling: 700, herb: 715, tulip: 730, peacock: 745, crystalball: 760
+};
 
 function unlockedAccessories(affection) {
   return Object.entries(ACCESSORY_THRESHOLDS)

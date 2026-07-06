@@ -253,6 +253,10 @@
   .pet-item.locked { opacity: 0.4; cursor: default; }
   .pet-item.locked:hover { transform: none; }
   .pet-item-lock { position: absolute; bottom: -4px; right: -4px; font-size: 0.7rem; }
+  .wardrobe-open-btn { margin-top: 14px; border: none; background: rgba(232,132,90,0.08); color: var(--accent); font-size: 0.78rem; font-weight: 700; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
+  .wardrobe-open-btn:hover { background: rgba(232,132,90,0.16); }
+  .wardrobe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; padding: 4px 2px; }
+  .wardrobe-grid .pet-item { width: auto; aspect-ratio: 1; }
   @keyframes petBounce { 0% { transform: scale(1); } 30% { transform: scale(1.15) rotate(-4deg); } 60% { transform: scale(0.95) rotate(3deg); } 100% { transform: scale(1); } }
   .heart-particle { position: absolute; font-size: 1.2rem; pointer-events: none; animation: heartFloat 0.9s ease-out forwards; z-index: 3; }
   @keyframes heartFloat { 0% { transform: translate(-50%, 0) scale(0.6); opacity: 1; } 100% { transform: translate(-50%, -70px) scale(1.1); opacity: 0; } }
@@ -342,6 +346,17 @@
         <div class="pet-select-label" id="petLabelCat">Kot</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Popup pełnej szafki -->
+<div class="overlay" id="wardrobeOverlay">
+  <div class="popup">
+    <button class="popup-close" onclick="closeWardrobe()">✕</button>
+    <h2 id="wardrobeTitle">Szafka 🧥</h2>
+    <p style="color:var(--muted);font-size:0.85rem;line-height:1.5;margin-bottom:14px" id="wardrobeSubtitle">Głaskaj zwierzaka, żeby odblokować kolejne dodatki.</p>
+    <div class="wardrobe-grid" id="wardrobeGrid"></div>
+    <button class="popup-btn" onclick="closeWardrobe()" id="closeWardrobeBtn" style="margin-top:14px">Zamknij</button>
   </div>
 </div>
 
@@ -490,6 +505,7 @@
         </div>
         <div class="pet-name" id="petAffectionLabel">Głaskań: 0</div>
         <div class="pet-wardrobe" id="petWardrobe"></div>
+        <button class="wardrobe-open-btn" id="openWardrobeBtn" onclick="openWardrobe()">🧥 Szafka</button>
       </div>
     </div>
   </div>
@@ -836,6 +852,19 @@ function updateInterfaceLanguage(lang) {
   if (document.getElementById('petLabelDog')) document.getElementById('petLabelDog').textContent = petDogLabels[lang] || petDogLabels.pl;
   if (document.getElementById('petLabelCat')) document.getElementById('petLabelCat').textContent = petCatLabels[lang] || petCatLabels.pl;
   if (petState) renderPetCard();
+  // Popup szafki
+  const wardrobeTitles = { pl: 'Szafka 🧥', en: 'Wardrobe 🧥', uk: 'Гардероб 🧥', de: 'Kleiderschrank 🧥', es: 'Armario 🧥' };
+  const wardrobeSubs = {
+    pl: 'Głaskaj zwierzaka, żeby odblokować kolejne dodatki.',
+    en: 'Pet your animal to unlock more items.',
+    uk: 'Гладь свого улюбленця, щоб розблокувати більше предметів.',
+    de: 'Streichle dein Tier, um mehr Zubehör freizuschalten.',
+    es: 'Acaricia a tu mascota para desbloquear más accesorios.'
+  };
+  const wardrobeClose = { pl: 'Zamknij', en: 'Close', uk: 'Закрити', de: 'Schließen', es: 'Cerrar' };
+  if (document.getElementById('wardrobeTitle')) document.getElementById('wardrobeTitle').textContent = wardrobeTitles[lang] || wardrobeTitles.pl;
+  if (document.getElementById('wardrobeSubtitle')) document.getElementById('wardrobeSubtitle').textContent = wardrobeSubs[lang] || wardrobeSubs.pl;
+  if (document.getElementById('closeWardrobeBtn')) document.getElementById('closeWardrobeBtn').textContent = wardrobeClose[lang] || wardrobeClose.pl;
   // Referral popup
   const refTitles = { pl: 'Poleć znajomym 🎁', en: 'Refer a friend 🎁', uk: 'Запроси друга 🎁', de: 'Freund einladen 🎁', es: 'Invita a un amigo 🎁' };
   const refSubtitles = {
@@ -886,7 +915,7 @@ function updateInterfaceLanguage(lang) {
 // History API
 function pushOverlayState(id) { history.pushState({ overlay: id }, ''); }
 window.addEventListener('popstate', () => {
-  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay','petSelectOverlay'].forEach(id => {
+  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay','petSelectOverlay','wardrobeOverlay'].forEach(id => {
     document.getElementById(id).classList.remove('visible');
   });
   document.getElementById('userMenu').classList.remove('visible');
@@ -1259,8 +1288,48 @@ const PET_ACCESSORIES = [
   { key: 'cap', emoji: '🧢', threshold: 60 },
   { key: 'flower', emoji: '🌸', threshold: 80 },
   { key: 'graduation', emoji: '🎓', threshold: 100 },
-  { key: 'diamond', emoji: '💎', threshold: 130 },
-  { key: 'butterfly', emoji: '🦋', threshold: 160 }
+  { key: 'star', emoji: '🌟', threshold: 130 },
+  { key: 'butterfly', emoji: '🦋', threshold: 160 },
+  { key: 'sunglasses', emoji: '🕶️', threshold: 175 },
+  { key: 'readingglasses', emoji: '👓', threshold: 190 },
+  { key: 'goggles', emoji: '🥽', threshold: 205 },
+  { key: 'disguise', emoji: '🥸', threshold: 220 },
+  { key: 'helmet', emoji: '⛑️', threshold: 235 },
+  { key: 'militaryhelmet', emoji: '🪖', threshold: 250 },
+  { key: 'hibiscus', emoji: '🌺', threshold: 265 },
+  { key: 'sunflower', emoji: '🌻', threshold: 280 },
+  { key: 'blossom', emoji: '🌼', threshold: 295 },
+  { key: 'wiltedflower', emoji: '🥀', threshold: 310 },
+  { key: 'rose', emoji: '🌹', threshold: 325 },
+  { key: 'lotus', emoji: '🪷', threshold: 340 },
+  { key: 'hyacinth', emoji: '🪻', threshold: 355 },
+  { key: 'whiteflower', emoji: '💮', threshold: 370 },
+  { key: 'sparkles', emoji: '✨', threshold: 385 },
+  { key: 'starclassic', emoji: '⭐', threshold: 400 },
+  { key: 'dizzy', emoji: '💫', threshold: 415 },
+  { key: 'pumpkin', emoji: '🎃', threshold: 430 },
+  { key: 'bee', emoji: '🐝', threshold: 445 },
+  { key: 'ladybug', emoji: '🐞', threshold: 460 },
+  { key: 'leaf', emoji: '🍃', threshold: 475 },
+  { key: 'mapleleaf', emoji: '🍁', threshold: 490 },
+  { key: 'clover', emoji: '🍀', threshold: 505 },
+  { key: 'snowflake', emoji: '❄️', threshold: 520 },
+  { key: 'rainbow', emoji: '🌈', threshold: 535 },
+  { key: 'sun', emoji: '☀️', threshold: 550 },
+  { key: 'moon', emoji: '🌙', threshold: 565 },
+  { key: 'planet', emoji: '🪐', threshold: 580 },
+  { key: 'dove', emoji: '🕊️', threshold: 595 },
+  { key: 'swan', emoji: '🦢', threshold: 610 },
+  { key: 'bird', emoji: '🐦', threshold: 625 },
+  { key: 'owl', emoji: '🦉', threshold: 640 },
+  { key: 'ribbon', emoji: '🎗️', threshold: 655 },
+  { key: 'mushroom', emoji: '🍄', threshold: 670 },
+  { key: 'shell', emoji: '🐚', threshold: 685 },
+  { key: 'seedling', emoji: '🌱', threshold: 700 },
+  { key: 'herb', emoji: '🌿', threshold: 715 },
+  { key: 'tulip', emoji: '🌷', threshold: 730 },
+  { key: 'peacock', emoji: '🦚', threshold: 745 },
+  { key: 'crystalball', emoji: '🔮', threshold: 760 }
 ];
 let petState = null;
 
@@ -1293,6 +1362,16 @@ async function choosePet(species) {
   } catch (err) { console.error('Błąd wyboru zwierzaka:', err); }
 }
 
+function renderAccessoryItem(a) {
+  const isUnlocked = petState.unlocked.includes(a.key);
+  const isEquipped = petState.equipped === a.key;
+  const lock = isUnlocked ? '' : `<span class="pet-item-lock">🔒</span>`;
+  const lockedLabels = { pl: 'Odblokowuje się przy', en: 'Unlocks at', uk: 'Розблоковується при', de: 'Freigeschaltet bei', es: 'Se desbloquea con' };
+  const petsWord = { pl: 'głaskaniach', en: 'pets', uk: 'погладженнях', de: 'Streicheleinheiten', es: 'caricias' };
+  const title = isUnlocked ? '' : `${lockedLabels[currentLanguage] || lockedLabels.pl} ${a.threshold} ${petsWord[currentLanguage] || petsWord.pl}`;
+  return `<div class="pet-item ${isEquipped ? 'equipped' : ''} ${isUnlocked ? '' : 'locked'}" onclick="${isUnlocked ? `toggleAccessory('${a.key}')` : ''}" title="${title}">${a.emoji}${lock}</div>`;
+}
+
 function renderPetCard() {
   if (!petState) return;
   const card = document.getElementById('petCard');
@@ -1305,12 +1384,28 @@ function renderPetCard() {
   document.getElementById('petAccessory').textContent = accEmoji || '';
 
   const wardrobe = document.getElementById('petWardrobe');
-  wardrobe.innerHTML = PET_ACCESSORIES.map(a => {
-    const isUnlocked = petState.unlocked.includes(a.key);
-    const isEquipped = petState.equipped === a.key;
-    const lock = isUnlocked ? '' : `<span class="pet-item-lock">🔒</span>`;
-    return `<div class="pet-item ${isEquipped ? 'equipped' : ''} ${isUnlocked ? '' : 'locked'}" onclick="${isUnlocked ? `toggleAccessory('${a.key}')` : ''}" title="${isUnlocked ? '' : 'Odblokowuje się przy ' + a.threshold + ' głaskaniach'}">${a.emoji}${lock}</div>`;
-  }).join('');
+  wardrobe.innerHTML = PET_ACCESSORIES.slice(0, 10).map(renderAccessoryItem).join('');
+
+  const wardrobeBtn = document.getElementById('openWardrobeBtn');
+  if (wardrobeBtn) {
+    const wardrobeLabels = { pl: 'Szafka', en: 'Wardrobe', uk: 'Гардероб', de: 'Kleiderschrank', es: 'Armario' };
+    wardrobeBtn.textContent = `🧥 ${wardrobeLabels[currentLanguage] || wardrobeLabels.pl} (${petState.unlocked.length}/${PET_ACCESSORIES.length})`;
+  }
+  if (document.getElementById('wardrobeOverlay').classList.contains('visible')) renderWardrobeGrid();
+}
+
+function openWardrobe() {
+  if (!petState) return;
+  pushOverlayState('wardrobeOverlay');
+  document.getElementById('wardrobeOverlay').classList.add('visible');
+  renderWardrobeGrid();
+}
+
+function closeWardrobe() { document.getElementById('wardrobeOverlay').classList.remove('visible'); }
+
+function renderWardrobeGrid() {
+  const grid = document.getElementById('wardrobeGrid');
+  grid.innerHTML = PET_ACCESSORIES.map(renderAccessoryItem).join('');
 }
 
 async function petTheAnimal() {
@@ -1708,7 +1803,7 @@ function startNewChat() {
 }
 
 // Zamknij po kliknięciu tła
-['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay'].forEach(id => {
+['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay','wardrobeOverlay'].forEach(id => {
   document.getElementById(id).addEventListener('click', (e) => { if (e.target.id === id) document.getElementById(id).classList.remove('visible'); });
 });
 document.addEventListener('click', (e) => {

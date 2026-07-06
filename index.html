@@ -550,7 +550,7 @@ async function loadDailyQuote() {
 
   if (!data) {
     try {
-      const res = await fetch('/api/daily', {
+      const res = await fetch('/api/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ language: currentLanguage, userId: currentUser?.id || null })
@@ -1004,7 +1004,7 @@ async function startCheckout() {
   const btn = document.querySelector('.premium-btn');
   btn.textContent = 'Przekierowuję...'; btn.disabled = true;
   try {
-    const res = await fetch('/api/create-checkout', {
+    const res = await fetch('/api/subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: currentUser.id, userEmail: currentUser.emailAddresses?.[0]?.emailAddress })

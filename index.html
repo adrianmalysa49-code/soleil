@@ -241,7 +241,8 @@
   .pet-unlock-toast { position: absolute; top: -14px; left: 50%; transform: translateX(-50%) translateY(-10px); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 0.8rem; font-weight: 700; padding: 8px 16px; border-radius: 20px; box-shadow: 0 6px 16px rgba(232,132,90,0.4); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; z-index: 5; }
   .pet-unlock-toast.visible { opacity: 1; transform: translateX(-50%) translateY(-26px); }
   .pet-stage { position: relative; display: inline-block; cursor: pointer; user-select: none; padding: 10px; }
-  .pet-emoji { font-size: 4.2rem; line-height: 1; transition: transform 0.15s ease; filter: drop-shadow(0 6px 10px rgba(58,46,40,0.12)); }
+  .pet-emoji { line-height: 1; transition: transform 0.15s ease; filter: drop-shadow(0 6px 10px rgba(58,46,40,0.12)); }
+  .pet-emoji img { width: 84px; height: 84px; display: block; }
   .pet-stage:active .pet-emoji { transform: scale(0.9); }
   .pet-stage.bounce .pet-emoji { animation: petBounce 0.4s ease; }
   .pet-accessory { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); font-size: 1.8rem; z-index: 2; pointer-events: none; }
@@ -265,7 +266,8 @@
   .pet-select-row { display: flex; gap: 14px; }
   .pet-select-card { flex: 1; background: rgba(232,132,90,0.06); border: 2px solid transparent; border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
   .pet-select-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-  .pet-select-emoji { font-size: 3rem; margin-bottom: 8px; }
+  .pet-select-emoji { margin-bottom: 8px; display: flex; justify-content: center; }
+  .pet-select-emoji img { width: 64px; height: 64px; }
   .pet-select-label { font-weight: 700; color: var(--text); font-size: 0.9rem; }
   .daily-loading { text-align: center; padding: 8px 0; color: var(--muted); font-size: 0.78rem; }
   #clerk-sign-in { min-height: 200px; }
@@ -338,11 +340,11 @@
     <p style="color:var(--muted);font-size:0.85rem;line-height:1.5;margin-bottom:16px" id="petSelectSubtitle">Będzie Ci towarzyszyć każdego dnia. Możesz go głaskać i ubierać.</p>
     <div class="pet-select-row">
       <div class="pet-select-card" onclick="choosePet('dog')">
-        <div class="pet-select-emoji">🐶</div>
+        <div class="pet-select-emoji"><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f436/128.png" alt="pies"></div>
         <div class="pet-select-label" id="petLabelDog">Pies</div>
       </div>
       <div class="pet-select-card" onclick="choosePet('cat')">
-        <div class="pet-select-emoji">🐱</div>
+        <div class="pet-select-emoji"><img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f431/128.png" alt="kot"></div>
         <div class="pet-select-label" id="petLabelCat">Kot</div>
       </div>
     </div>
@@ -1278,7 +1280,10 @@ async function openReferral() {
 function closeReferral() { document.getElementById('referralOverlay').classList.remove('visible'); }
 
 // ZWIERZAK NASTROJU
-const PET_EMOJI = { dog: '🐶', cat: '🐱' };
+const PET_IMAGES = {
+  dog: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f436/128.png',
+  cat: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f431/128.png'
+};
 const PET_ACCESSORIES = [
   { key: 'hat', emoji: '🎩', threshold: 0 },
   { key: 'scarf', emoji: '🧣', threshold: 5 },
@@ -1376,7 +1381,7 @@ function renderPetCard() {
   if (!petState) return;
   const card = document.getElementById('petCard');
   card.style.display = 'block';
-  document.getElementById('petEmoji').textContent = PET_EMOJI[petState.species] || '🐾';
+  document.getElementById('petEmoji').innerHTML = `<img src="${PET_IMAGES[petState.species] || PET_IMAGES.dog}" alt="${petState.species}">`;
   const affectionLabels = { pl: 'Głaskań', en: 'Pets', uk: 'Погладжень', de: 'Streicheleinheiten', es: 'Caricias' };
   document.getElementById('petAffectionLabel').textContent = `${affectionLabels[currentLanguage] || affectionLabels.pl}: ${petState.affection}`;
 

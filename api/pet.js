@@ -1,5 +1,5 @@
 // Progi odblokowania dodatków (liczba głaskań) — wspólne źródło prawdy z frontendem (index.html)
-const ACCESSORY_THRESHOLDS = { hat: 0, scarf: 5, bow: 15, glasses: 30 };
+const ACCESSORY_THRESHOLDS = { hat: 0, scarf: 5, bow: 15, glasses: 30, crown: 45, cap: 60, flower: 80, graduation: 100, diamond: 130, butterfly: 160 };
 
 function unlockedAccessories(affection) {
   return Object.entries(ACCESSORY_THRESHOLDS)

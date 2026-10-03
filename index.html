@@ -262,18 +262,25 @@
   .wardrobe-grid .pet-item { width: auto; aspect-ratio: 1; }
 
   /* Ruch i ciało */
-  .body-popup { max-width: 420px; }
-  .body-silhouette-wrap { display: flex; justify-content: center; background: rgba(232,132,90,0.05); border-radius: 16px; padding: 10px; }
-  .body-silhouette { width: 150px; height: auto; }
+  .body-card { background: white; border-radius: 20px; padding: 18px 16px 16px; margin-top: 14px; box-shadow: 0 4px 16px var(--shadow); text-align: left; animation: fadeSlideIn 0.8s ease both; animation-delay: 0.3s; }
+  .body-card-title { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--accent); font-size: 1rem; margin-bottom: 2px; text-align: center; }
+  .body-card-sub { font-size: 0.78rem; color: var(--muted); line-height: 1.4; margin-bottom: 12px; text-align: center; }
+  .body-card-row { display: flex; gap: 14px; align-items: center; }
+  .body-silhouette-wrap { flex-shrink: 0; display: flex; justify-content: center; background: rgba(232,132,90,0.05); border-radius: 16px; padding: 10px; }
+  .body-silhouette { width: 110px; height: auto; }
   .body-zone { fill: var(--accent2); opacity: 0.55; cursor: pointer; transition: opacity 0.15s ease, fill 0.15s ease; stroke: white; stroke-width: 2; }
   .body-zone:hover { opacity: 0.8; }
   .body-zone.selected { fill: var(--accent); opacity: 1; }
-  .body-detail { margin-top: 14px; min-height: 120px; }
-  .body-detail-placeholder { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 30px 10px; }
-  .body-detail-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 16px var(--shadow); animation: fadeSlideIn 0.4s ease both; }
+  .body-detail { flex: 1; min-height: 120px; display: flex; align-items: center; }
+  .body-detail-placeholder { width: 100%; text-align: center; color: var(--muted); font-size: 0.85rem; padding: 20px 10px; }
+  .body-detail-card { width: 100%; animation: fadeSlideIn 0.4s ease both; }
   .body-detail-title { font-weight: 700; color: var(--accent); font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
   .body-detail-link { font-size: 0.82rem; color: var(--text); line-height: 1.5; margin-bottom: 10px; }
   .body-detail-exercise { font-size: 0.82rem; color: var(--text); line-height: 1.5; background: rgba(125,189,181,0.1); border-radius: 10px; padding: 10px 12px; font-weight: 600; }
+  @media (max-width: 520px) {
+    .body-card-row { flex-direction: column; }
+    .body-detail { width: 100%; min-height: 0; }
+  }
   @keyframes petBounce { 0% { transform: scale(1); } 30% { transform: scale(1.15) rotate(-4deg); } 60% { transform: scale(0.95) rotate(3deg); } 100% { transform: scale(1); } }
   .heart-particle { position: absolute; font-size: 1.2rem; pointer-events: none; animation: heartFloat 0.9s ease-out forwards; z-index: 3; }
   @keyframes heartFloat { 0% { transform: translate(-50%, 0) scale(0.6); opacity: 1; } 100% { transform: translate(-50%, -70px) scale(1.1); opacity: 0; } }
@@ -375,33 +382,6 @@
     <p style="color:var(--muted);font-size:0.85rem;line-height:1.5;margin-bottom:14px" id="wardrobeSubtitle">Głaskaj zwierzaka, żeby odblokować kolejne dodatki.</p>
     <div class="wardrobe-grid" id="wardrobeGrid"></div>
     <button class="popup-btn" onclick="closeWardrobe()" id="closeWardrobeBtn" style="margin-top:14px">Zamknij</button>
-  </div>
-</div>
-
-<!-- Popup ciała / ruchu -->
-<div class="overlay" id="bodyOverlay">
-  <div class="popup body-popup">
-    <button class="popup-close" onclick="closeBody()">✕</button>
-    <h2 id="bodyTitle">Ruch i ciało 🧍</h2>
-    <p style="color:var(--muted);font-size:0.85rem;line-height:1.5;margin-bottom:10px" id="bodySubtitle">Dotknij część ciała, żeby zobaczyć krótkie ćwiczenie powiązane z nastrojem.</p>
-
-    <div class="body-silhouette-wrap">
-      <svg class="body-silhouette" id="bodySvg" viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg">
-        <circle class="body-zone" data-zone="head_neck" cx="100" cy="36" r="26"></circle>
-        <rect class="body-zone" data-zone="head_neck" x="88" y="58" width="24" height="18" rx="6"></rect>
-        <rect class="body-zone" data-zone="shoulders" x="48" y="78" width="104" height="26" rx="13"></rect>
-        <rect class="body-zone" data-zone="chest" x="62" y="98" width="76" height="56" rx="16"></rect>
-        <rect class="body-zone" data-zone="arms" x="18" y="86" width="26" height="118" rx="13"></rect>
-        <rect class="body-zone" data-zone="arms" x="156" y="86" width="26" height="118" rx="13"></rect>
-        <rect class="body-zone" data-zone="core" x="66" y="150" width="68" height="58" rx="18"></rect>
-        <rect class="body-zone" data-zone="legs" x="66" y="206" width="30" height="170" rx="14"></rect>
-        <rect class="body-zone" data-zone="legs" x="104" y="206" width="30" height="170" rx="14"></rect>
-      </svg>
-    </div>
-
-    <div class="body-detail" id="bodyDetail">
-      <div class="body-detail-placeholder" id="bodyPlaceholder">👆 <span id="bodyPlaceholderText">Wybierz część ciała powyżej</span></div>
-    </div>
   </div>
 </div>
 
@@ -513,7 +493,6 @@
     <div class="header-actions">
       <span id="premiumBadge">✨ Premium</span>
       <span id="streakBadge"></span>
-      <button class="header-icon-btn visible" onclick="openBody()" title="Ruch i ciało">🧍</button>
       <button class="header-icon-btn visible" onclick="openSummary()" title="Mój tydzień">📊</button>
       <button class="header-icon-btn" id="conversationsBtn" onclick="openConversations()" title="Rozmowy">💬</button>
       <button class="auth-btn" id="loginBtn" onclick="openAuth()">Zaloguj się</button>
@@ -542,6 +521,30 @@
             <div class="daily-label" id="dailyLabel">Cytat dnia</div>
             <div class="daily-quote" id="dailyQuote"></div>
             <div class="daily-author" id="dailyAuthor"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ruch i ciało -->
+      <div class="body-card" id="bodyCard">
+        <div class="body-card-title" id="bodyTitle">Ruch i ciało 🧍</div>
+        <div class="body-card-sub" id="bodySubtitle">Dotknij część ciała, żeby zobaczyć krótkie ćwiczenie powiązane z nastrojem.</div>
+        <div class="body-card-row">
+          <div class="body-silhouette-wrap">
+            <svg class="body-silhouette" id="bodySvg" viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg">
+              <circle class="body-zone" data-zone="head_neck" cx="100" cy="36" r="26"></circle>
+              <rect class="body-zone" data-zone="head_neck" x="88" y="58" width="24" height="18" rx="6"></rect>
+              <rect class="body-zone" data-zone="shoulders" x="48" y="78" width="104" height="26" rx="13"></rect>
+              <rect class="body-zone" data-zone="chest" x="62" y="98" width="76" height="56" rx="16"></rect>
+              <rect class="body-zone" data-zone="arms" x="18" y="86" width="26" height="118" rx="13"></rect>
+              <rect class="body-zone" data-zone="arms" x="156" y="86" width="26" height="118" rx="13"></rect>
+              <rect class="body-zone" data-zone="core" x="66" y="150" width="68" height="58" rx="18"></rect>
+              <rect class="body-zone" data-zone="legs" x="66" y="206" width="30" height="170" rx="14"></rect>
+              <rect class="body-zone" data-zone="legs" x="104" y="206" width="30" height="170" rx="14"></rect>
+            </svg>
+          </div>
+          <div class="body-detail" id="bodyDetail">
+            <div class="body-detail-placeholder">👆 <span id="bodyPlaceholderText">Wybierz część ciała</span></div>
           </div>
         </div>
       </div>
@@ -950,7 +953,7 @@ function updateInterfaceLanguage(lang) {
     de: 'Tippe auf einen Körperteil, um eine kurze Übung passend zu deiner Stimmung zu sehen.',
     es: 'Toca una parte del cuerpo para ver un ejercicio corto relacionado con tu estado de ánimo.'
   };
-  const bodyPlaceholder = { pl: 'Wybierz część ciała powyżej', en: 'Pick a body part above', uk: 'Обери частину тіла вище', de: 'Wähle oben einen Körperteil', es: 'Elige una parte del cuerpo arriba' };
+  const bodyPlaceholder = { pl: 'Wybierz część ciała', en: 'Pick a body part', uk: 'Обери частину тіла', de: 'Wähle einen Körperteil', es: 'Elige una parte del cuerpo' };
   if (document.getElementById('bodyTitle')) document.getElementById('bodyTitle').textContent = bodyTitles[lang] || bodyTitles.pl;
   if (document.getElementById('bodySubtitle')) document.getElementById('bodySubtitle').textContent = bodySubs[lang] || bodySubs.pl;
   if (document.getElementById('bodyPlaceholderText')) document.getElementById('bodyPlaceholderText').textContent = bodyPlaceholder[lang] || bodyPlaceholder.pl;
@@ -1004,7 +1007,7 @@ function updateInterfaceLanguage(lang) {
 // History API
 function pushOverlayState(id) { history.pushState({ overlay: id }, ''); }
 window.addEventListener('popstate', () => {
-  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay','petSelectOverlay','wardrobeOverlay','bodyOverlay'].forEach(id => {
+  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay','petSelectOverlay','wardrobeOverlay'].forEach(id => {
     document.getElementById(id).classList.remove('visible');
   });
   document.getElementById('userMenu').classList.remove('visible');
@@ -1607,13 +1610,6 @@ const BODY_ZONES = {
   }
 };
 
-function openBody() {
-  pushOverlayState('bodyOverlay');
-  document.getElementById('bodyOverlay').classList.add('visible');
-}
-
-function closeBody() { document.getElementById('bodyOverlay').classList.remove('visible'); }
-
 function selectBodyZone(key) {
   const zone = BODY_ZONES[key];
   if (!zone) return;
@@ -1998,7 +1994,7 @@ function startNewChat() {
 }
 
 // Zamknij po kliknięciu tła
-['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay','wardrobeOverlay','bodyOverlay'].forEach(id => {
+['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay','wardrobeOverlay'].forEach(id => {
   document.getElementById(id).addEventListener('click', (e) => { if (e.target.id === id) document.getElementById(id).classList.remove('visible'); });
 });
 document.addEventListener('click', (e) => {

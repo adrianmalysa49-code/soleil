@@ -40,6 +40,8 @@
   .particle { position: absolute; border-radius: 50%; opacity: 0.18; animation: floatUp linear infinite; }
   @keyframes floatUp { 0% { transform: translateY(110vh); opacity: 0; } 10% { opacity: 0.18; } 90% { opacity: 0.18; } 100% { transform: translateY(-10vh); opacity: 0; } }
   .app { position: relative; z-index: 1; height: 100vh; height: -webkit-fill-available; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; padding: 0 14px; padding-bottom: env(safe-area-inset-bottom); }
+  .inapp-banner { flex-shrink: 0; background: #3a2e28; color: #fff; font-size: 0.76rem; line-height: 1.4; padding: 10px 12px; border-radius: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .inapp-banner button { flex-shrink: 0; border: none; background: var(--accent); color: #fff; font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
 
   /* HEADER */
   header { padding: 12px 0 10px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; min-height: 60px; }
@@ -258,6 +260,20 @@
   .wardrobe-open-btn:hover { background: rgba(232,132,90,0.16); }
   .wardrobe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; padding: 4px 2px; }
   .wardrobe-grid .pet-item { width: auto; aspect-ratio: 1; }
+
+  /* Ruch i ciało */
+  .body-popup { max-width: 420px; }
+  .body-silhouette-wrap { display: flex; justify-content: center; background: rgba(232,132,90,0.05); border-radius: 16px; padding: 10px; }
+  .body-silhouette { width: 150px; height: auto; }
+  .body-zone { fill: var(--accent2); opacity: 0.55; cursor: pointer; transition: opacity 0.15s ease, fill 0.15s ease; stroke: white; stroke-width: 2; }
+  .body-zone:hover { opacity: 0.8; }
+  .body-zone.selected { fill: var(--accent); opacity: 1; }
+  .body-detail { margin-top: 14px; min-height: 120px; }
+  .body-detail-placeholder { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 30px 10px; }
+  .body-detail-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 16px var(--shadow); animation: fadeSlideIn 0.4s ease both; }
+  .body-detail-title { font-weight: 700; color: var(--accent); font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .body-detail-link { font-size: 0.82rem; color: var(--text); line-height: 1.5; margin-bottom: 10px; }
+  .body-detail-exercise { font-size: 0.82rem; color: var(--text); line-height: 1.5; background: rgba(125,189,181,0.1); border-radius: 10px; padding: 10px 12px; font-weight: 600; }
   @keyframes petBounce { 0% { transform: scale(1); } 30% { transform: scale(1.15) rotate(-4deg); } 60% { transform: scale(0.95) rotate(3deg); } 100% { transform: scale(1); } }
   .heart-particle { position: absolute; font-size: 1.2rem; pointer-events: none; animation: heartFloat 0.9s ease-out forwards; z-index: 3; }
   @keyframes heartFloat { 0% { transform: translate(-50%, 0) scale(0.6); opacity: 1; } 100% { transform: translate(-50%, -70px) scale(1.1); opacity: 0; } }
@@ -362,6 +378,33 @@
   </div>
 </div>
 
+<!-- Popup ciała / ruchu -->
+<div class="overlay" id="bodyOverlay">
+  <div class="popup body-popup">
+    <button class="popup-close" onclick="closeBody()">✕</button>
+    <h2 id="bodyTitle">Ruch i ciało 🧍</h2>
+    <p style="color:var(--muted);font-size:0.85rem;line-height:1.5;margin-bottom:10px" id="bodySubtitle">Dotknij część ciała, żeby zobaczyć krótkie ćwiczenie powiązane z nastrojem.</p>
+
+    <div class="body-silhouette-wrap">
+      <svg class="body-silhouette" id="bodySvg" viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg">
+        <circle class="body-zone" data-zone="head_neck" cx="100" cy="36" r="26"></circle>
+        <rect class="body-zone" data-zone="head_neck" x="88" y="58" width="24" height="18" rx="6"></rect>
+        <rect class="body-zone" data-zone="shoulders" x="48" y="78" width="104" height="26" rx="13"></rect>
+        <rect class="body-zone" data-zone="chest" x="62" y="98" width="76" height="56" rx="16"></rect>
+        <rect class="body-zone" data-zone="arms" x="18" y="86" width="26" height="118" rx="13"></rect>
+        <rect class="body-zone" data-zone="arms" x="156" y="86" width="26" height="118" rx="13"></rect>
+        <rect class="body-zone" data-zone="core" x="66" y="150" width="68" height="58" rx="18"></rect>
+        <rect class="body-zone" data-zone="legs" x="66" y="206" width="30" height="170" rx="14"></rect>
+        <rect class="body-zone" data-zone="legs" x="104" y="206" width="30" height="170" rx="14"></rect>
+      </svg>
+    </div>
+
+    <div class="body-detail" id="bodyDetail">
+      <div class="body-detail-placeholder" id="bodyPlaceholder">👆 <span id="bodyPlaceholderText">Wybierz część ciała powyżej</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- Popup rozmów -->
 <div class="overlay" id="conversationsOverlay">
   <div class="conversations-popup">
@@ -454,6 +497,10 @@
 </div>
 
 <div class="app">
+  <div class="inapp-banner" id="inappBanner" style="display:none">
+    <span id="inappBannerText">Aby się zalogować, otwórz tę stronę w przeglądarce (Safari/Chrome).</span>
+    <button onclick="copyPageLink()" id="inappBannerBtn">Kopiuj link</button>
+  </div>
   <header>
     <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
     <div class="logo-circle">
@@ -466,6 +513,7 @@
     <div class="header-actions">
       <span id="premiumBadge">✨ Premium</span>
       <span id="streakBadge"></span>
+      <button class="header-icon-btn visible" onclick="openBody()" title="Ruch i ciało">🧍</button>
       <button class="header-icon-btn visible" onclick="openSummary()" title="Mój tydzień">📊</button>
       <button class="header-icon-btn" id="conversationsBtn" onclick="openConversations()" title="Rozmowy">💬</button>
       <button class="auth-btn" id="loginBtn" onclick="openAuth()">Zaloguj się</button>
@@ -534,6 +582,32 @@ let currentUser = null;
 let selectedMood = null;
 let currentConversationId = null;
 let userIsPremium = false;
+
+// Wykrywanie przeglądarek wbudowanych (Messenger, Instagram, WhatsApp, TikTok itd.),
+// w których Google blokuje logowanie (błąd disallowed_useragent)
+function detectInAppBrowser() {
+  const ua = navigator.userAgent || '';
+  const isInApp = /FBAN|FBAV|Instagram|Messenger|Line\/|MicroMessenger|TikTok|musical_ly|WhatsApp/i.test(ua);
+  if (isInApp) {
+    const banner = document.getElementById('inappBanner');
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const texts = isIOS
+      ? 'Logowanie nie zadziała w tej przeglądarce. Dotknij "⋯" w prawym górnym rogu i wybierz "Otwórz w przeglądarce", albo skopiuj link i wklej w Safari.'
+      : 'Logowanie nie zadziała w tej przeglądarce. Dotknij "⋮" i wybierz "Otwórz w przeglądarce", albo skopiuj link i wklej w Chrome.';
+    document.getElementById('inappBannerText').textContent = texts;
+    banner.style.display = 'flex';
+  }
+}
+
+function copyPageLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('inappBannerBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Skopiowano ✓';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  }).catch(() => {});
+}
+detectInAppBrowser();
 let currentStreak = 0;
 let lastSummaryData = null;
 let currentLanguage = localStorage.getItem('soleil_language') || 'pl';
@@ -867,6 +941,19 @@ function updateInterfaceLanguage(lang) {
   if (document.getElementById('wardrobeTitle')) document.getElementById('wardrobeTitle').textContent = wardrobeTitles[lang] || wardrobeTitles.pl;
   if (document.getElementById('wardrobeSubtitle')) document.getElementById('wardrobeSubtitle').textContent = wardrobeSubs[lang] || wardrobeSubs.pl;
   if (document.getElementById('closeWardrobeBtn')) document.getElementById('closeWardrobeBtn').textContent = wardrobeClose[lang] || wardrobeClose.pl;
+  // Popup ruchu i ciała
+  const bodyTitles = { pl: 'Ruch i ciało 🧍', en: 'Movement & body 🧍', uk: 'Рух і тіло 🧍', de: 'Bewegung & Körper 🧍', es: 'Movimiento y cuerpo 🧍' };
+  const bodySubs = {
+    pl: 'Dotknij część ciała, żeby zobaczyć krótkie ćwiczenie powiązane z nastrojem.',
+    en: 'Tap a body part to see a short exercise linked to your mood.',
+    uk: 'Торкнися частини тіла, щоб побачити коротку вправу, пов\'язану з настроєм.',
+    de: 'Tippe auf einen Körperteil, um eine kurze Übung passend zu deiner Stimmung zu sehen.',
+    es: 'Toca una parte del cuerpo para ver un ejercicio corto relacionado con tu estado de ánimo.'
+  };
+  const bodyPlaceholder = { pl: 'Wybierz część ciała powyżej', en: 'Pick a body part above', uk: 'Обери частину тіла вище', de: 'Wähle oben einen Körperteil', es: 'Elige una parte del cuerpo arriba' };
+  if (document.getElementById('bodyTitle')) document.getElementById('bodyTitle').textContent = bodyTitles[lang] || bodyTitles.pl;
+  if (document.getElementById('bodySubtitle')) document.getElementById('bodySubtitle').textContent = bodySubs[lang] || bodySubs.pl;
+  if (document.getElementById('bodyPlaceholderText')) document.getElementById('bodyPlaceholderText').textContent = bodyPlaceholder[lang] || bodyPlaceholder.pl;
   // Referral popup
   const refTitles = { pl: 'Poleć znajomym 🎁', en: 'Refer a friend 🎁', uk: 'Запроси друга 🎁', de: 'Freund einladen 🎁', es: 'Invita a un amigo 🎁' };
   const refSubtitles = {
@@ -917,7 +1004,7 @@ function updateInterfaceLanguage(lang) {
 // History API
 function pushOverlayState(id) { history.pushState({ overlay: id }, ''); }
 window.addEventListener('popstate', () => {
-  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay','petSelectOverlay','wardrobeOverlay'].forEach(id => {
+  ['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','referralOverlay','petSelectOverlay','wardrobeOverlay','bodyOverlay'].forEach(id => {
     document.getElementById(id).classList.remove('visible');
   });
   document.getElementById('userMenu').classList.remove('visible');
@@ -1408,6 +1495,147 @@ function openWardrobe() {
 
 function closeWardrobe() { document.getElementById('wardrobeOverlay').classList.remove('visible'); }
 
+// RUCH I CIAŁO — sylwetka interaktywna łącząca ruch z nastrojem
+const BODY_ZONES = {
+  head_neck: {
+    icon: '🧠',
+    title: { pl: 'Głowa i kark', en: 'Head & neck', uk: 'Голова і шия', de: 'Kopf & Nacken', es: 'Cabeza y cuello' },
+    link: {
+      pl: 'Tu najczęściej najpierw czuć stres i natłok myśli.',
+      en: 'This is usually the first place stress and racing thoughts show up.',
+      uk: 'Тут найчастіше першим відчувається стрес і потік думок.',
+      de: 'Hier zeigen sich Stress und Gedankenkarussell meist zuerst.',
+      es: 'Aquí es donde suelen aparecer primero el estrés y los pensamientos acelerados.'
+    },
+    exercise: {
+      pl: '🏃 Powolne krążenia głową — 8 w każdą stronę (30 sek.)',
+      en: '🏃 Slow neck rolls — 8 each direction (30 sec)',
+      uk: '🏃 Повільні кругові рухи головою — по 8 в кожен бік (30 сек)',
+      de: '🏃 Langsame Nackenrollen — 8 in jede Richtung (30 Sek.)',
+      es: '🏃 Rotaciones lentas de cuello — 8 en cada dirección (30 seg)'
+    }
+  },
+  shoulders: {
+    icon: '💪',
+    title: { pl: 'Barki i ramiona', en: 'Shoulders', uk: 'Плечі', de: 'Schultern', es: 'Hombros' },
+    link: {
+      pl: 'Spięte barki to klasyczny znak, że nosisz w sobie za dużo.',
+      en: 'Tight shoulders are a classic sign you\'re carrying too much.',
+      uk: 'Напружені плечі — класична ознака того, що ти несеш забагато.',
+      de: 'Verspannte Schultern sind ein klassisches Zeichen, dass du zu viel trägst.',
+      es: 'Los hombros tensos son una señal clásica de que cargas demasiado.'
+    },
+    exercise: {
+      pl: '🏃 Krążenia ramionami w tył — 10 powtórzeń (40 sek.)',
+      en: '🏃 Shoulder rolls backward — 10 reps (40 sec)',
+      uk: '🏃 Кругові рухи плечима назад — 10 повторень (40 сек)',
+      de: '🏃 Schulterkreisen rückwärts — 10 Wiederholungen (40 Sek.)',
+      es: '🏃 Rotaciones de hombros hacia atrás — 10 repeticiones (40 seg)'
+    }
+  },
+  chest: {
+    icon: '🫁',
+    title: { pl: 'Klatka piersiowa', en: 'Chest', uk: 'Грудна клітка', de: 'Brustkorb', es: 'Pecho' },
+    link: {
+      pl: 'Płytki oddech często idzie w parze z niepokojem.',
+      en: 'Shallow breathing often goes hand in hand with anxiety.',
+      uk: 'Поверхневе дихання часто йде пліч-о-пліч із тривогою.',
+      de: 'Flache Atmung geht oft mit Unruhe einher.',
+      es: 'La respiración superficial suele ir de la mano con la ansiedad.'
+    },
+    exercise: {
+      pl: '🏃 Oddech 4-7-8 — wdech 4s, zatrzymanie 7s, wydech 8s (3 cykle)',
+      en: '🏃 4-7-8 breathing — inhale 4s, hold 7s, exhale 8s (3 cycles)',
+      uk: '🏃 Дихання 4-7-8 — вдих 4с, затримка 7с, видих 8с (3 цикли)',
+      de: '🏃 4-7-8-Atmung — 4s einatmen, 7s halten, 8s ausatmen (3 Zyklen)',
+      es: '🏃 Respiración 4-7-8 — inhala 4s, retén 7s, exhala 8s (3 ciclos)'
+    }
+  },
+  core: {
+    icon: '🌀',
+    title: { pl: 'Brzuch i rdzeń', en: 'Core', uk: 'Корпус', de: 'Rumpf', es: 'Núcleo' },
+    link: {
+      pl: 'Stabilny rdzeń ciała pomaga też poczuć się stabilniej emocjonalnie.',
+      en: 'A stable core can help you feel steadier emotionally too.',
+      uk: 'Стабільний корпус допомагає відчувати себе стабільніше й емоційно.',
+      de: 'Ein stabiler Rumpf kann dir helfen, dich auch emotional stabiler zu fühlen.',
+      es: 'Un núcleo estable también puede ayudarte a sentirte más estable emocionalmente.'
+    },
+    exercise: {
+      pl: '🏃 Deska (plank) — 20-30 sek., poczuj oddech w brzuchu',
+      en: '🏃 Plank — 20-30 sec, feel your breath in your belly',
+      uk: '🏃 Планка — 20-30 сек, відчуй дихання животом',
+      de: '🏃 Unterarmstütz (Plank) — 20-30 Sek., spüre den Atem im Bauch',
+      es: '🏃 Plancha (plank) — 20-30 seg, siente la respiración en el vientre'
+    }
+  },
+  arms: {
+    icon: '🙌',
+    title: { pl: 'Ręce i dłonie', en: 'Arms & hands', uk: 'Руки й кисті', de: 'Arme & Hände', es: 'Brazos y manos' },
+    link: {
+      pl: 'Zaciśnięte dłonie to częsty, niezauważony sygnał stresu.',
+      en: 'Clenched hands are a common, often unnoticed stress signal.',
+      uk: 'Стиснуті кулаки — поширений, часто непомічений сигнал стресу.',
+      de: 'Geballte Hände sind ein häufiges, oft unbemerktes Stresssignal.',
+      es: 'Los puños apretados son una señal común y a menudo inadvertida de estrés.'
+    },
+    exercise: {
+      pl: '🏃 Zaciśnij pięści na 5 sek., potem w pełni rozluźnij — powtórz 5 razy',
+      en: '🏃 Clench fists for 5 sec, then fully release — repeat 5 times',
+      uk: '🏃 Стисни кулаки на 5 сек, потім повністю розслаб — повтори 5 разів',
+      de: '🏃 Fäuste 5 Sek. anspannen, dann ganz lösen — 5 Mal wiederholen',
+      es: '🏃 Aprieta los puños 5 seg, luego suelta por completo — repite 5 veces'
+    }
+  },
+  legs: {
+    icon: '🦵',
+    title: { pl: 'Nogi', en: 'Legs', uk: 'Ноги', de: 'Beine', es: 'Piernas' },
+    link: {
+      pl: 'Ruch nóg — nawet krótki spacer — potrafi wyraźnie podbić nastrój.',
+      en: 'Moving your legs — even a short walk — can noticeably lift your mood.',
+      uk: 'Рух ногами — навіть коротка прогулянка — помітно піднімає настрій.',
+      de: 'Beinbewegung — selbst ein kurzer Spaziergang — kann die Stimmung spürbar heben.',
+      es: 'Mover las piernas — incluso un paseo corto — puede mejorar notablemente el ánimo.'
+    },
+    exercise: {
+      pl: '🏃 5-minutowy spacer albo 20 przysiadów w swoim tempie',
+      en: '🏃 A 5-minute walk or 20 squats at your own pace',
+      uk: '🏃 5-хвилинна прогулянка або 20 присідань у своєму темпі',
+      de: '🏃 5 Minuten spazieren gehen oder 20 Kniebeugen im eigenen Tempo',
+      es: '🏃 Una caminata de 5 minutos o 20 sentadillas a tu ritmo'
+    }
+  }
+};
+
+function openBody() {
+  pushOverlayState('bodyOverlay');
+  document.getElementById('bodyOverlay').classList.add('visible');
+}
+
+function closeBody() { document.getElementById('bodyOverlay').classList.remove('visible'); }
+
+function selectBodyZone(key) {
+  const zone = BODY_ZONES[key];
+  if (!zone) return;
+
+  document.querySelectorAll('.body-zone').forEach(el => {
+    el.classList.toggle('selected', el.getAttribute('data-zone') === key);
+  });
+
+  const lang = currentLanguage;
+  document.getElementById('bodyDetail').innerHTML = `
+    <div class="body-detail-card">
+      <div class="body-detail-title">${zone.icon} ${zone.title[lang] || zone.title.pl}</div>
+      <div class="body-detail-link">${zone.link[lang] || zone.link.pl}</div>
+      <div class="body-detail-exercise">${zone.exercise[lang] || zone.exercise.pl}</div>
+    </div>`;
+}
+
+document.getElementById('bodySvg').addEventListener('click', (e) => {
+  const key = e.target.getAttribute('data-zone');
+  if (key) selectBodyZone(key);
+});
+
 function renderWardrobeGrid() {
   const grid = document.getElementById('wardrobeGrid');
   grid.innerHTML = PET_ACCESSORIES.map(renderAccessoryItem).join('');
@@ -1770,7 +1998,7 @@ function startNewChat() {
 }
 
 // Zamknij po kliknięciu tła
-['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay','wardrobeOverlay'].forEach(id => {
+['authOverlay','moodOverlay','summaryOverlay','conversationsOverlay','premiumOverlay','languageOverlay','referralOverlay','wardrobeOverlay','bodyOverlay'].forEach(id => {
   document.getElementById(id).addEventListener('click', (e) => { if (e.target.id === id) document.getElementById(id).classList.remove('visible'); });
 });
 document.addEventListener('click', (e) => {
